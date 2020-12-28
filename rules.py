@@ -12,20 +12,20 @@ class Rules:
     def get_valid_actions(self, board):
         raise NotImplementedError
 
-    def terminal(self, board):
-        raise NotImplementedError
-
-    def terminal(self, board):
-        raise NotImplementedError
-
-    def is_winner(self, board, player):
-        raise NotImplementedError
-
-    def init_board(self):
+    def start_board(self):
         raise NotImplementedError
 
     def perspective(self, board, player):
         raise NotImplementedError
 
     def tostring(self, board):
+        raise NotImplementedError
+
+    def terminal(self, board):
+        raise NotImplementedError
+
+    def result(self, board, player):
+        raise NotImplementedError
+
+    def is_winner(self, board, player):
         raise NotImplementedError
