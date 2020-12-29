@@ -52,13 +52,13 @@ class AlphaZero:
                 score = 0
             else:
                 score = wins / wins + losses
-            print(f"wins: {wins} - ties: {ties} - losses: {losses} - score: {round(score, 3)}")
+            print(f"wins: {wins} - ties: {ties} - losses: {losses} - score: {score}")
             if score >= self.args.playoff_threshold:
-                print("Updated network accepted")
+                print("Updated network accepted\n")
                 self.checkpoint_num += 1
                 save_checkpoint(self.nnet, self.sess_num, self.checkpoint_num)
             else:
-                print("Updated network rejected")
+                print("Updated network rejected\n")
                 load_checkpoint(self.nnet, self.sess_num, self.checkpoint_num)
 
     def self_play(self, mcts):
