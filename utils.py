@@ -18,7 +18,7 @@ def save_checkpoint(nnet, sess_num, checkpoint_num):
     name = "nnet_checkpoint" + str(checkpoint_num)
 
     if os.path.isfile(os.path.join(folder, name)):
-        return -1
+        raise FileExistsError(f"Model '{os.path.join(folder, name)}' already exists!")
     
     params = nnet.model.state_dict()
     torch.save(params, os.path.join(folder, name))
@@ -34,3 +34,19 @@ def load_checkpoint(nnet, sess_num, checkpoint_num):
 class Dotdict(dict):
     def __getattr__(self, name):
         return self[name]
+
+class Average_Meter(object):
+    def __init__(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def __repr__(self):
+        return f"{self.avg:.2e}"
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count

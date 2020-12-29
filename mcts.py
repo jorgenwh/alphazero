@@ -12,30 +12,25 @@ class MCTS:
         self.Ns = defaultdict(lambda: 1e-8)
         self.Ps = defaultdict(float)
 
-    def tree_search(self, board, t):
+    def tree_search(self, board, temperature):
         # run monte carlo tree search simulations
         for _ in range(self.args.monte_carlo_simulations):
             self.simulate(board)
 
         s = self.game_rules.tostring(board)
-        sims = [self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game_rules.get_action_space())]
+        counts = [self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game_rules.get_action_space())]
 
-        if t > 0:
-            # if temperature is above 0 (we don't return a greedy policy)
-            probs = [n ** (1 / t) for n in sims]
-            p_sum = np.sum(probs)
-            pi = np.array([p / p_sum for p in probs])
-            return pi
-        else:
-            # if t = 0 we return a greedy policy
-            pi = np.zeros(self.game_rules.get_action_space())
-            best_actions = []
-            for a in range(self.game_rules.get_action_space()):
-                if sims[a] == np.max(sims):
-                    best_actions.append(a)
-            action = np.random.choice(best_actions)
-            pi[action] = 1
-            return pi
+        if temperature == 0:
+            best_actions = np.array(np.where(counts == np.max(counts))).flatten()
+            best_action = np.random.choice(best_actions)
+            probs = [0] * len(counts)
+            probs[best_action] = 1
+            return probs
+
+        counts = [x ** (1. / temperature) for x in counts]
+        counts_sum = float(sum(counts))
+        probs = [x / counts_sum for x in counts]
+        return probs
 
     def simulate(self, board):
         """
@@ -51,7 +46,9 @@ class MCTS:
 
         # if we haven't evaluated this position before (we have reached a leaf node)
         if s not in self.Ps:
-            pi, value = self.nnet.evaluate(board, valid_actions)
+            pi, value = self.nnet.evaluate(board)
+            pi = pi * valid_actions
+            pi = pi / np.sum(pi)
             self.Ps[s] = pi
             return -value
 
