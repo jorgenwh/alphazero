@@ -17,7 +17,7 @@ args = Dotdict({
     "cpuct": 1,
 
     # monte carlo tree search
-    "monte_carlo_simulations": 25,
+    "monte_carlo_simulations": 100,
 
     # neural network
     "lr": 0.001,

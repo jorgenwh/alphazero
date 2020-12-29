@@ -51,7 +51,7 @@ class AlphaZero:
             if wins + losses == 0:
                 score = 0
             else:
-                score = wins / wins + losses
+                score = wins / (wins + losses)
             print(f"wins: {wins} - ties: {ties} - losses: {losses} - score: {score}")
             if score >= self.args.playoff_threshold:
                 print("Updated network accepted\n")
@@ -73,7 +73,10 @@ class AlphaZero:
             t = int(step < self.args.exploration_temp_threshold)
 
             pi = mcts.tree_search(board_perspective, t)
-            examples.append((board_perspective, pi, cur_player))
+            symmetric_positions = self.game_rules.get_symmetric_positions(board_perspective, pi)
+            for pos in symmetric_positions:
+                examples.append((pos[0], pos[1], cur_player))
+            #examples.append((board_perspective, pi, cur_player))
 
             action = np.random.choice(self.game_rules.get_action_space(), p=pi)
             board, cur_player = self.game_rules.step(board, action, cur_player)
