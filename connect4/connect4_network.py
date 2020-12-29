@@ -19,7 +19,7 @@ class Connect4_Model(nn.Module):
         self.fc2 = self.linear_block(1024, 512)
 
         self.pi = nn.Linear(512, 7)
-        self.v = nn.Linear(512, 1)
+        self.value = nn.Linear(512, 1)
         
     def forward(self, b):
         b = b.reshape(-1, 1, self.board_height, self.board_width)
@@ -31,9 +31,9 @@ class Connect4_Model(nn.Module):
         r = self.fc1(r)
         r = self.fc2(r)
 
-        pi = torch.log_softmax(self.pi(r), dim=1)
-        v = torch.tanh(self.v(r))
-        return pi, v
+        pi = self.pi(r)
+        value = self.value(r)
+        return pi, torch.tanh(value)
 
     def same_padding(self, kernel_size):
         return kernel_size // 2

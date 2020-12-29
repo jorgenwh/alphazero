@@ -13,15 +13,17 @@ args = Dotdict({
     "play_memory": 150_000,
     "exploration_temp_threshold": 14, 
     "playoff_threshold": 0.55,
+    "playoff_episodes": 40,
     "cpuct": 1,
 
     # monte carlo tree search
-    "monte_carlo_simulations": 50,
+    "monte_carlo_simulations": 25,
 
     # neural network
     "lr": 0.001,
-    "num_channels": 512,
+    "epochs": 10,
     "batch_size": 64,
+    "num_channels": 512,
     "cuda": True
 })
 
