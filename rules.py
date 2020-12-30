@@ -18,7 +18,7 @@ class Rules:
     def perspective(self, board, player):
         raise NotImplementedError
 
-    def get_symmetric_positions(self, board, pi):
+    def get_equal_positions(self, board, pi):
         raise NotImplementedError
 
     def tostring(self, board):

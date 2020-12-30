@@ -86,9 +86,7 @@ class Connect4_Widget(QtWidgets.QWidget):
                 y_ = start_y + y*gap
 
                 if self.winner_row:
-                    if (y, x) in self.winner_row:
-                        painter.setOpacity(1)
-                    elif self.app.board[y,x] == 0:
+                    if (y, x) in self.winner_row or self.app.board[y,x] == 0:
                         painter.setOpacity(1)
                     else:
                         painter.setOpacity(0.55)

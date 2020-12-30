@@ -34,7 +34,7 @@ class Connect4_Rules(Rules):
     def perspective(self, board, player):
         return board * player
 
-    def get_symmetric_positions(self, board, pi):
+    def get_equal_positions(self, board, pi):
         positions = [(board, pi)]
         positions.append((np.flip(board, 1), np.flip(pi)))
         return positions

@@ -11,9 +11,14 @@ from connect4.connect4_rules import Connect4_Rules
 from connect4.connect4_network import Connect4_Network
 from connect4.connect4_window import Connect4_Window
 
+from tictactoe.tictactoe_rules import TicTacToe_Rules
+from tictactoe.tictactoe_network import TicTacToe_Network
+from tictactoe.tictactoe_window import TicTacToe_Window
+
 if __name__ == "__main__":
     games_sets = {
-        "connect4": (Connect4_Rules, Connect4_Network, Connect4_Window)
+        "connect4": (Connect4_Rules, Connect4_Network, Connect4_Window),
+        "tictactoe": (TicTacToe_Rules, TicTacToe_Network, TicTacToe_Window)
     }
 
     parser = argparse.ArgumentParser(description="AZ.")
@@ -60,7 +65,8 @@ if __name__ == "__main__":
             if not os.path.isfile(os.path.join("models/", args.model)):
                 print(f"Cannot find model '{os.path.join(folder, name)}'. Starting with a new model.")
             else:
+                print(f"Loading pretrained model: '{os.path.join(folder, name)}'.")
                 load_model(nnet, args.model)
 
-        alphazero = AlphaZero(game_rules, nnet, args)
+        alphazero = AlphaZero(game_rules, nnet, args, games_sets[args.game][1])
         alphazero.training_loop()

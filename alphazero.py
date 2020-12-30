@@ -5,17 +5,16 @@ import numpy as np
 from tqdm import tqdm
 from collections import deque
 
-from connect4.connect4_network import Connect4_Network
-from utils import setup_session, save_checkpoint, load_checkpoint, save_model
 from mcts import MCTS
+from utils import setup_session, save_checkpoint, load_checkpoint, save_model
 
 class AlphaZero:
-    def __init__(self, game_rules, nnet, args):
+    def __init__(self, game_rules, nnet, args, nn_class):
         self.game_rules = game_rules
         self.nnet = nnet
         self.args = args
 
-        self.oppnnet = Connect4_Network(self.game_rules, self.args)
+        self.oppnnet = nn_class(self.game_rules, self.args)
         self.sess_num = setup_session()
         self.checkpoint_num = 0
         save_checkpoint(self.nnet, self.sess_num, self.checkpoint_num)
@@ -71,9 +70,9 @@ class AlphaZero:
             
             pi = mcts.tree_search(board_perspective, temperature)
 
-            symmetric_positions = self.game_rules.get_symmetric_positions(board_perspective, pi)
-            for sym_board, sym_pi in symmetric_positions:
-                sequence.append((sym_board, sym_pi, cur_player))
+            equal_positions = self.game_rules.get_equal_positions(board_perspective, pi)
+            for board_, pi_ in equal_positions:
+                sequence.append((board_, pi_, cur_player))
 
             action = np.random.choice(self.game_rules.get_action_space(), p=pi)
             board, cur_player = self.game_rules.step(board, action, cur_player)
