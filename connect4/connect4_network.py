@@ -1,56 +1,66 @@
 import torch
-import torch.nn as nn
+import numpy as np
+from tqdm import tqdm
 
-class Connect4_Model(nn.Module):
-    def __init__(self, args):
-        super(Connect4_Model, self).__init__()
+from .connect4_model import Connect4_Model
+from utils import Average_Meter
+
+class Connect4_Network:
+    def __init__(self, game_rules, args):
+        self.game_rules = game_rules
         self.args = args
-        self.board_height, self.board_width = 6, 7
-
-        self.conv_block1 = self.conv_block(1, self.args.num_channels, kernel_size=3, stride=1, padding=self.same_padding(3))
-        self.conv_block2 = self.conv_block(self.args.num_channels, self.args.num_channels, kernel_size=3, stride=1, padding=self.same_padding(3))
-        self.conv_block3 = self.conv_block(self.args.num_channels, self.args.num_channels, kernel_size=3, stride=1)
-        self.conv_block4 = self.conv_block(self.args.num_channels, self.args.num_channels, kernel_size=3, stride=1)
-
-        self.height_size_out = self.conv_size_out(self.conv_size_out(6, 3, 1), 3, 1)
-        self.width_size_out = self.conv_size_out(self.conv_size_out(7, 3, 1), 3, 1)
-
-        self.fc1 = self.linear_block(self.args.num_channels * self.height_size_out * self.width_size_out, 1024)
-        self.fc2 = self.linear_block(1024, 512)
-
-        self.pi = nn.Linear(512, 7)
-        self.value = nn.Linear(512, 1)
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() and self.args.cuda else "cpu")
+        self.model = Connect4_Model(self.args).to(self.device)
+        self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.args.lr)
         
-    def forward(self, b):
-        b = b.reshape(-1, 1, self.board_height, self.board_width)
-        r = self.conv_block1(b)
-        r = self.conv_block2(r)
-        r = self.conv_block3(r)
-        r = self.conv_block4(r)
-        r = r.reshape(b.shape[0], -1)
-        r = self.fc1(r)
-        r = self.fc2(r)
+    def evaluate(self, board):
+        """
+        Evaluates a board position and gives a policy prediction aswell as a value prediction.
+        The invalid actions are masked out of the policy using valid_actions before softmax or log_softmax is used.
+        """
+        self.model.eval()
+        b = board.reshape(1, 1, 6, 7)
+        b = torch.FloatTensor(b).to(self.device)
 
-        pi = self.pi(r)
-        value = self.value(r)
-        return pi, torch.tanh(value)
+        with torch.no_grad():
+            pi, v = self.model(b)
 
-    def same_padding(self, kernel_size):
-        return kernel_size // 2
+        return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]
+        
+    def train(self, training_data):
+        self.model.train()
+        for epoch in range(self.args.epochs):
+            print(f"Epoch: {epoch+1}/{self.args.epochs}")
+            batches = int(len(training_data) / self.args.batch_size)
 
-    def conv_size_out(self, size, kernel_size, stride, padding=0):
-        size += padding*2
-        return (size - (kernel_size - 1) - 1) // stride + 1
+            pi_losses = Average_Meter()
+            v_losses = Average_Meter()
 
-    def conv_block(self, in_channels, out_channels, *args, **kwargs):
-        return nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, *args, **kwargs),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU()
-        )
+            t = tqdm(range(batches), desc="Training")
+            for _ in t:
+                indices = np.random.randint(len(training_data), size=self.args.batch_size)
+                boards, pis, vs = list(zip(*[training_data[i] for i in indices]))
+                
+                boards = torch.FloatTensor(boards).to(self.device)
+                pis = torch.FloatTensor(pis).to(self.device)
+                vs = torch.FloatTensor(vs).to(self.device)
 
-    def linear_block(self, in_features, out_features):
-        return nn.Sequential(
-            nn.Linear(in_features, out_features),
-            nn.ReLU()
-        )
+                out_pi, out_v = self.model(boards)
+
+                pi_loss = self.pi_loss(pis, out_pi)
+                v_loss = self.v_loss(vs, out_v)
+                loss = pi_loss + v_loss
+
+                pi_losses.update(pi_loss.item(), boards.size(0))
+                v_losses.update(v_loss.item(), boards.size(0))
+                t.set_postfix(pi_loss=pi_losses, v_loss=v_losses)
+
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+            
+    def pi_loss(self, target, out):
+        return -torch.sum(target * out) / target.size()[0]
+    
+    def v_loss(self, target, out):
+        return torch.sum((target - out.view(-1)) ** 2) / target.size()[0]
