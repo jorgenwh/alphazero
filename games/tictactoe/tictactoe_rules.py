@@ -35,9 +35,9 @@ class TicTacToe_Rules(Rules):
         positions = [(board, pi)]
         p = np.array(pi).reshape(board.shape)
         
-        positions.append((np.rot90(board), np.rot90(p).flatten()))
-        positions.append((np.rot90(np.rot90(board)), np.rot90(np.rot90(p)).flatten()))
-        positions.append((np.rot90(np.rot90(np.rot90(board))), np.rot90(np.rot90(np.rot90(p))).flatten()))
+        for i in range(3):
+            b, p = np.rot90(board), np.rot90(p)
+            positions.append((b, p.copy().flatten()))
 
         positions.append((np.flip(board, 0), np.flip(p, 0).flatten()))
         positions.append((np.flip(board, 1), np.flip(p, 1).flatten()))
