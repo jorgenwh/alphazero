@@ -7,28 +7,33 @@ from alphazero import AlphaZero
 from mcts import MCTS
 from utils import load_model
 
-from connect4.connect4_rules import Connect4_Rules
-from connect4.connect4_network import Connect4_Network
-from connect4.connect4_window import Connect4_Window
+from games.connect4.connect4_rules import Connect4_Rules
+from games.connect4.connect4_network import Connect4_Network
+from games.connect4.connect4_window import Connect4_Window
 
-from tictactoe.tictactoe_rules import TicTacToe_Rules
-from tictactoe.tictactoe_network import TicTacToe_Network
-from tictactoe.tictactoe_window import TicTacToe_Window
+from games.tictactoe.tictactoe_rules import TicTacToe_Rules
+from games.tictactoe.tictactoe_network import TicTacToe_Network
+from games.tictactoe.tictactoe_window import TicTacToe_Window
+
+from games.gomoku.gomoku_rules import Gomoku_Rules
+from games.gomoku.gomoku_network import Gomoku_Network
+from games.gomoku.gomoku_window import Gomoku_Window
 
 if __name__ == "__main__":
     games_sets = {
         "connect4": (Connect4_Rules, Connect4_Network, Connect4_Window),
-        "tictactoe": (TicTacToe_Rules, TicTacToe_Network, TicTacToe_Window)
+        "tictactoe": (TicTacToe_Rules, TicTacToe_Network, TicTacToe_Window),
+        "gomoku": (Gomoku_Rules, Gomoku_Network, Gomoku_Window)
     }
 
     parser = argparse.ArgumentParser(description="AZ.")
 
     # AlphaZero
-    parser.add_argument("--iterations", help="Number of training iterations.", type=int, default=200)
+    parser.add_argument("--iterations", help="Number of training iterations.", type=int, default=20)
     parser.add_argument("--episodes", help="Number of self-play episodes to perform per iteration.", type=int, default=150)
     parser.add_argument("--play_memory", help="Maximum number of example moves to remember from the self-plays.", type=int, default=150_000)
-    parser.add_argument("--playoffs", help="Number of evaluation playoffs against the previous neural network checkpoint.", type=int, default=50)
-    parser.add_argument("--playoff_score_threshold", help="Win/loss ratio threshold to save new neural networks.", type=float, default=0.55)
+    parser.add_argument("--eval_matches", help="Number of evaluation playoffs against the previous neural network checkpoint.", type=int, default=50)
+    parser.add_argument("--eval_score_threshold", help="Win/loss ratio threshold to save new neural networks.", type=float, default=0.55)
     parser.add_argument("--exploration_temp_threshold", help="How many moves to perform before decreasing the exploration threshold.", type=int, default=12)
     parser.add_argument("--cpuct", help="Constant to control the amount of exploration.", type=float, default=1.0)
     parser.add_argument("--monte_carlo_simulations", help="Number of monte carlo simulations to perform when choosing a move.", type=int, default=75)
@@ -45,13 +50,18 @@ if __name__ == "__main__":
 
     # Which game to train/play
     parser.add_argument("--game", help="Which of the implemented game-rules and networks to provide to AlphaZero.", type=str, default="connect4")
+    parser.add_argument("--size", help="Game board size. Only relevant for Gomoku and Go", type=int, default=9)
 
     args = parser.parse_args()
 
     if args.game not in games_sets:
         raise NotImplementedError(f"Game '{args.game}' is not implemented!")
 
-    game_rules = games_sets[args.game][0]()
+    if args.game == "gomoku" or args.game == "go":
+        assert args.size >= 6
+        game_rules = games_sets[args.game][0](args.size)
+    else:
+        game_rules = games_sets[args.game][0]()
     nnet = games_sets[args.game][1](game_rules, args)
 
     if args.duel:
@@ -69,4 +79,4 @@ if __name__ == "__main__":
                 load_model(nnet, args.model)
 
         alphazero = AlphaZero(game_rules, nnet, args, games_sets[args.game][1])
-        alphazero.training_loop()
+        alphazero.train()
