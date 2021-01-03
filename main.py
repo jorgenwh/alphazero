@@ -44,13 +44,13 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", help="How many move examples to sample for each batch during training. (2048 - 4096 in papers)", type=float, default=128)
     parser.add_argument("--cuda", help="Enable cuda.", type=bool, default=True)
 
-    # Naming
+    # Models
     parser.add_argument("--duel", help="The name of a model the user wants to play against. The training algorithm will not be ran if this is provided. Instead a game window will allow the user to play against AlphaZero using the model name provided.", type=str, default=None)
     parser.add_argument("--model", help="Start training with a pretrained model under 'models/[model]'.", type=str, default=None)
 
     # Which game to train/play
     parser.add_argument("--game", help="Which of the implemented game-rules and networks to provide to AlphaZero.", type=str, default="connect4")
-    parser.add_argument("--size", help="Game board size. Only relevant for Gomoku and Go", type=int, default=9)
+    parser.add_argument("--size", help="Game board size. Only relevant for Gomoku and Go", type=int, default=7)
 
     args = parser.parse_args()
 
@@ -72,10 +72,11 @@ if __name__ == "__main__":
         sys.exit(app.exec_())
     else:
         if args.model:
-            if not os.path.isfile(os.path.join("models/", args.model)):
-                print(f"Cannot find model '{os.path.join(folder, name)}'. Starting with a new model.")
+            folder = "models/"
+            if not os.path.isfile(os.path.join(folder, args.model)):
+                print(f"Cannot find model '{os.path.join(folder, args.model)}'. Starting with a new model.")
             else:
-                print(f"Loading pretrained model: '{os.path.join(folder, name)}'.")
+                print(f"Loading pretrained model: '{os.path.join(folder, args.model)}'.")
                 load_model(nnet, args.model)
 
         alphazero = AlphaZero(game_rules, nnet, args, games_sets[args.game][1])

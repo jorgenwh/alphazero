@@ -33,14 +33,14 @@ class Gomoku_Rules(Rules):
 
     def get_equal_positions(self, board, pi):
         positions = [(board, pi)]
-        p = np.array(pi).reshape(board.shape)
+        """p = np.array(pi).reshape(board.shape)
         
         for i in range(3):
             b, p = np.rot90(board), np.rot90(p)
             positions.append((b, p.copy().flatten()))
 
         positions.append((np.flip(board, 0), np.flip(p, 0).flatten()))
-        positions.append((np.flip(board, 1), np.flip(p, 1).flatten()))
+        positions.append((np.flip(board, 1), np.flip(p, 1).flatten()))"""
 
         return positions
         
