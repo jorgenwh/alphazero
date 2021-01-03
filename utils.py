@@ -2,6 +2,13 @@ import os
 import torch
 
 def setup_session():
+    """
+    Setup a session folder containing the model-checkpoints folder.
+    
+    Returns:
+        (int): the session number which is used to keep track of where to save the checkpoints
+            and other data.
+    """
     if not os.path.isdir("sessions/"):
         os.mkdir("sessions")
 
@@ -48,7 +55,7 @@ def load_model(nnet, name):
 
 class Average_Meter(object):
     """
-    Average meter from pytorch
+    Average meter from pytorch.
     """
     def __init__(self):
         self.val = 0

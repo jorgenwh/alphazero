@@ -10,6 +10,9 @@ from pit import Pit
 from utils import setup_session, save_checkpoint, load_checkpoint, save_model
 
 class AlphaZero:
+    """
+    The main AlphaZero class performing the overall training pipeline.
+    """
     def __init__(self, game_rules, nnet, args, nn_class):
         self.game_rules = game_rules
         self.nnet = nnet
@@ -23,6 +26,13 @@ class AlphaZero:
         self.training_data = deque(maxlen=self.args.play_memory)
 
     def train(self):
+        """
+        Train AlphaZero for args.iterations iterations before finally saving the resulting
+        model after all the training steps are completed.
+
+        If training is terminated before the final model is saved, the latest checkpoint model under
+        sessions/session(n)/ will contain the same weights as the latest best model.
+        """
         for i in range(self.args.iterations):
             print(f"Iteration {i+1}/{self.args.iterations}")
             self.iterate()
@@ -30,7 +40,14 @@ class AlphaZero:
         save_model(self.nnet, self.args.game + "_model")
 
     def iterate(self):
-        # self-play to generate training data
+        """
+        Perform one training iteration:
+            - Self-play for args.episodes games to generate training data.
+            - Train the neural network on the generated training data (and previously generated 
+                training data).
+            - Evaluate the updated network against the latest checkpoint to determine whether to 
+                checkpoint the updated network or delete it.
+        """
         print(f"\nSelf-play: ({self.args.episodes} episodes)")
         self_play = Self_Play(self.game_rules, self.nnet, self.args)
         training_data = self_play.play()

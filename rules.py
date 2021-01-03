@@ -1,5 +1,9 @@
 
 class Rules:
+    """
+    Abstract game-rules class.
+    For any new games implemented, all of the below methods are assumed implemented.
+    """
     def __init__(self):
         pass
 

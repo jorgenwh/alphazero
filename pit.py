@@ -4,6 +4,10 @@ import numpy as np
 from mcts import MCTS
 
 class Pit:
+    """
+    The neural network evaluation pit class, handling the evaluation
+    of updated neural networks to determine whether they should be checkpointed or deleted.
+    """
     def __init__(self, game_rules, nnet, oppnnet, args):
         self.game_rules = game_rules
         self.nnet = nnet
@@ -11,6 +15,10 @@ class Pit:
         self.args = args
 
     def evaluate(self):
+        """
+        Performs the evaluation by playing args.eval_matches matches between the updated- and the
+        previously checkpointed networks.
+        """
         wins = 0
         ties = 0
         losses = 0
@@ -44,6 +52,9 @@ class Pit:
         return wins, ties, losses
 
     def match(self, mcts1, mcts2):
+        """
+        Perform a single match between two networks.
+        """
         cur_player = 1
         board = self.game_rules.start_board()
 
