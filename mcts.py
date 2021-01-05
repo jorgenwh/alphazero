@@ -55,7 +55,7 @@ class MCTS:
             return -value
 
         s = self.game_rules.tostring(board)
-        valid_actions = self.game_rules.get_valid_actions(board)
+        valid_actions = self.game_rules.get_valid_actions(board, 1)
 
         """
         If we have reached a leaf node (unevaluated position node), we evaluate the position and store the

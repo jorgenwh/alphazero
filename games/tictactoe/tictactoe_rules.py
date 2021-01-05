@@ -7,7 +7,7 @@ class TicTacToe_Rules(Rules):
         pass
 
     def step(self, board, action, player):
-        assert self.get_valid_actions(board)[action]
+        assert self.get_valid_actions(board, player)[action]
         r = int(action/3)
         c = action % 3
         new_board = board.copy()
@@ -17,7 +17,7 @@ class TicTacToe_Rules(Rules):
     def get_action_space(self):
         return 9
 
-    def get_valid_actions(self, board):
+    def get_valid_actions(self, board, player):
         valid_actions = [0] * self.get_action_space()
         for r in range(3):
             for c in range(3):
@@ -44,7 +44,7 @@ class TicTacToe_Rules(Rules):
         return board.tostring()
 
     def terminal(self, board):
-        return sum(self.get_valid_actions(board)) == 0 or self.is_winner(board, 1) or self.is_winner(board, -1)
+        return sum(self.get_valid_actions(board, 1)) == 0 or sum(self.get_valid_actions(board, -1)) == 0 or self.is_winner(board, 1) or self.is_winner(board, -1)
 
     def result(self, board, player):
         if self.is_winner(board, player):

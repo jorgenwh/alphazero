@@ -13,7 +13,7 @@ class Rules:
     def get_action_space(self):
         raise NotImplementedError
 
-    def get_valid_actions(self, board):
+    def get_valid_actions(self, board, player):
         raise NotImplementedError
 
     def start_board(self):
