@@ -43,8 +43,8 @@ class Gomoku_Network:
 
                 out_pi, out_v = self.model(boards)
 
-                pi_loss = self.pi_loss(pis, torch.log_softmax(out_pi, dim=1))
-                v_loss = self.v_loss(vs, out_v)
+                pi_loss = self.pi_loss(pis, torch.log_softmax(out_pi, dim=1), pis.shape[0])
+                v_loss = self.v_loss(vs, out_v, vs.shape[0])
                 loss = pi_loss + v_loss
 
                 epoch_loss.update(loss.item(), boards.shape[0])
@@ -54,8 +54,8 @@ class Gomoku_Network:
                 loss.backward()
                 self.optimizer.step()
             
-    def pi_loss(self, target, out):
-        return -torch.sum(target * out) / target.shape[0]
+    def pi_loss(self, target, out, size):
+        return -torch.sum(target * out) / size
     
-    def v_loss(self, target, out):
-        return torch.sum((target - out.reshape(-1)) ** 2) / target.shape[0]
+    def v_loss(self, target, out, size):
+        return torch.sum((target - out.reshape(-1)) ** 2) / size

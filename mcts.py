@@ -68,8 +68,12 @@ class MCTS:
 
             # Mask the invalid actions from the action probability tensor before
             # renormalizing the output probabilities.
+            
+            # TODO Fix an issue where the NN only assigns value to invalid moves, resulting in the sum of the policy
+            # to be 0. This currently leaves the saved policy for the state to be 0 for all moves.
             pi = pi * valid_actions
-            pi = pi / np.sum(pi)
+            pi = pi / max(np.sum(pi), 1e-8)
+
             self.P[s] = pi
             return -value
 

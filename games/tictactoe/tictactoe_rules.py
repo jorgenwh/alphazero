@@ -32,15 +32,11 @@ class TicTacToe_Rules(Rules):
         return board * player
 
     def get_equal_positions(self, board, pi):
+        # TODO rotate board to get more equal positions
         positions = [(board, pi)]
-        """p = np.array(pi).reshape(board.shape)
-        
-        for i in range(3):
-            b, p = np.rot90(board), np.rot90(p)
-            positions.append((b, p.copy().flatten()))
 
-        positions.append((np.flip(board, 0), np.flip(p, 0).flatten()))
-        positions.append((np.flip(board, 1), np.flip(p, 1).flatten()))"""
+        positions.append((np.flip(board, 0), np.flip(np.array(pi).reshape(board.shape), 0).flatten()))
+        positions.append((np.flip(board, 1), np.flip(np.array(pi).reshape(board.shape), 1).flatten()))
 
         return positions
         

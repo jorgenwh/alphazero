@@ -19,11 +19,16 @@ from games.gomoku.gomoku_rules import Gomoku_Rules
 from games.gomoku.gomoku_network import Gomoku_Network
 from games.gomoku.gomoku_window import Gomoku_Window
 
+from games.othello.othello_rules import Othello_Rules
+from games.othello.othello_network import Othello_Network
+from games.othello.othello_window import Othello_Window
+
 if __name__ == "__main__":
     games_sets = {
         "connect4": (Connect4_Rules, Connect4_Network, Connect4_Window),
         "tictactoe": (TicTacToe_Rules, TicTacToe_Network, TicTacToe_Window),
-        "gomoku": (Gomoku_Rules, Gomoku_Network, Gomoku_Window)
+        "gomoku": (Gomoku_Rules, Gomoku_Network, Gomoku_Window),
+        "othello": (Othello_Rules, Othello_Network, Othello_Window)
     }
 
     parser = argparse.ArgumentParser(description="AZ.")
@@ -41,7 +46,7 @@ if __name__ == "__main__":
     # Neural Network
     parser.add_argument("--lr", help="Learning rate for the neural network.", type=float, default=1e-3)
     parser.add_argument("--epochs", help="Training epochs per iteration.", type=int, default=10)
-    parser.add_argument("--batch_size", help="How many move examples to sample for each batch during training. (2048 - 4096 in papers)", type=float, default=128)
+    parser.add_argument("--batch_size", help="How many move examples to sample for each batch during training. (2048 - 4096 in paper)", type=int, default=128)
     parser.add_argument("--cuda", help="Enable cuda.", type=bool, default=True)
 
     # Models

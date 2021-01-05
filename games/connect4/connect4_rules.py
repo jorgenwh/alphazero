@@ -8,18 +8,18 @@ class Connect4_Rules(Rules):
 
     def step(self, board, action, player):
         assert self.get_valid_actions(board)[action]
-        row = self.lowest_row(board, action)
+        r = self.lowest_row(board, action)
         new_board = board.copy()
-        new_board[row,action] = player
+        new_board[r,action] = player
         return new_board, -player
 
     def get_action_space(self):
         return 7
 
     def lowest_row(self, board, action):
-        for row in range(5, -1, -1):
-            if not board[row,action]:
-                return row
+        for r in range(5, -1, -1):
+            if not board[r,action]:
+                return r
 
     def get_valid_actions(self, board):
         valid_actions = [0] * self.get_action_space()
