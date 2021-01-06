@@ -58,7 +58,7 @@ class AlphaZero:
         self.nnet.train(self.training_data)
 
         # pit the new and the previous networks against each other to evaluate the performance of the newly updated network
-        print(f"\nPit Evaluation")
+        """print(f"\nPit Evaluation")
         pit = Pit(self.game_rules, self.nnet, self.oppnnet, self.args)
         wins, ties, losses = pit.evaluate()
 
@@ -74,9 +74,9 @@ class AlphaZero:
             print("Updated Network Rejected")
             load_checkpoint(self.nnet, self.sess_num, self.checkpoint_num)
 
-        print(f"Checkpoint: {self.checkpoint_num}\n\n")
+        print(f"Checkpoint: {self.checkpoint_num}\n\n")"""
 
-        """self.checkpoint_num += 1
+        self.checkpoint_num += 1
         save_checkpoint(self.nnet, self.sess_num, self.checkpoint_num)
-        load_checkpoint(self.oppnnet, self.sess_num, self.checkpoint_num)"""
+        load_checkpoint(self.oppnnet, self.sess_num, self.checkpoint_num)
         

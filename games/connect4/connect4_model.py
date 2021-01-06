@@ -102,7 +102,7 @@ class Dual_Conv(nn.Module):
         self.args = args
 
         self.conv = self.conv_block(1, 256, kernel_size=3, stride=1, padding=1)
-        self.conv_blocks = [self.conv_block(256, 256, kernel_size=3, stride=1, padding=1) for _ in range(11)]
+        self.conv_blocks = [self.conv_block(256, 256, kernel_size=3, stride=1, padding=1) for _ in range(4)]
 
         self.pi = self.policy_head()
         self.v = self.value_head()

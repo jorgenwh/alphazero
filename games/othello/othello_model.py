@@ -14,7 +14,7 @@ class Othello_Model(nn.Module):
 
         self.size_out = self.conv_size_out(self.conv_size_out(8, 3, 1), 3, 1)
 
-        self.fc1 = self.linear_block(512 * 8 ** 2, 1024)
+        self.fc1 = self.linear_block(512 * self.size_out ** 2, 1024)
         self.fc2 = self.linear_block(1024, 512)
 
         self.pi = nn.Linear(512, 8 ** 2)

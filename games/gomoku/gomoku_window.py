@@ -4,7 +4,6 @@ import numpy as np
 class Gomoku_Window(QtWidgets.QMainWindow):
     def __init__(self, game_rules, mcts, args):
         super().__init__()
-        super().__init__()
         self.setAutoFillBackground(True)
         p = self.palette()
         p.setColor(self.backgroundRole(), QtGui.QColor(235, 200, 100))
