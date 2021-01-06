@@ -76,3 +76,4 @@ class Gomoku_Rules(Rules):
                     return True
 
         return False
+        

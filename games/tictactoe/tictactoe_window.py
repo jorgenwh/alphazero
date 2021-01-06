@@ -129,3 +129,4 @@ class TicTacToe_Widget(QtWidgets.QWidget):
             return [(2,0), (1,1), (0,2)]
         
         return []
+        

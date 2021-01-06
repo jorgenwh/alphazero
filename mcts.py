@@ -28,7 +28,7 @@ class MCTS:
         """
         if t > 0:
             pi = [N ** (1 / t) for N in raw_pi]
-            pi = [N / sum(pi) for N in pi]
+            pi = [N / max(sum(pi), 1e-8) for N in pi]
         else:
             actions = [i for i in range(len(raw_pi)) if raw_pi[i] == max(raw_pi)]
             pi = [0] * len(raw_pi)

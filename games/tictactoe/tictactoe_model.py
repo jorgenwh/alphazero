@@ -29,3 +29,4 @@ class TicTacToe_Model(nn.Module):
             nn.Linear(in_features, out_features),
             nn.ReLU()
         )
+        

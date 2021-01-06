@@ -144,3 +144,4 @@ class Gomoku_Widget(QtWidgets.QWidget):
                     return [(r, c), (r-1,c+1), (r-2,c+2), (r-3,c+3), (r-4,c+4)]
                 
         return []
+        

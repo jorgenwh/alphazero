@@ -75,3 +75,4 @@ class Connect4_Rules(Rules):
                     return True
 
         return False
+        

@@ -76,3 +76,4 @@ class Pit:
             return self.game_rules.result(board, cur_player)
         else:
             return self.game_rules.result(board, 1)
+            

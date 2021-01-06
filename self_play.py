@@ -56,3 +56,4 @@ class Self_Play:
         for board, pi, player in sequence:
             v = (1 if player == value else -1) if value else 0
             self.training_data.append((board, pi, v))
+            

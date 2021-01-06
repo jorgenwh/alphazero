@@ -113,3 +113,4 @@ class Othello_Rules(Rules):
             return score > 0
         else:
             return score < 0
+            
