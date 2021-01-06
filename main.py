@@ -39,7 +39,7 @@ if __name__ == "__main__":
     parser.add_argument("--play_memory", help="Maximum number of example moves to remember from the self-plays.", type=int, default=150_000)
     parser.add_argument("--eval_matches", help="Number of evaluation playoffs against the previous neural network checkpoint.", type=int, default=50)
     parser.add_argument("--eval_score_threshold", help="Win/loss ratio threshold to save new neural networks.", type=float, default=0.55)
-    parser.add_argument("--exploration_temp_threshold", help="How many moves to perform before decreasing the exploration threshold.", type=int, default=12)
+    #parser.add_argument("--exploration_temp_threshold", help="How many moves to perform before decreasing the exploration threshold.", type=int, default=12)
     parser.add_argument("--cpuct", help="Constant to control the amount of exploration.", type=float, default=1.0)
     parser.add_argument("--monte_carlo_simulations", help="Number of monte carlo simulations to perform when choosing a move.", type=int, default=75)
 
