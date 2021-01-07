@@ -72,10 +72,29 @@ class Othello_Widget(QtWidgets.QWidget):
     def draw(self):
         if self.app.game_rules.terminal(self.app.board):
             self.winner = self.app.game_rules.result(self.app.board, 1)
+            if self.winner == 1:
+                winner = "BLACK"
+            elif self.winner == -1:
+                winner = "WHITE"
+            else:
+                winner = "NONE"
+            b, w = self.get_scores(self.app.board)
+            print(f"Winner: {winner} - Score B/W: {b}/{w}")
         else:
             self.winner = None
 
         self.repaint()
+
+    def get_scores(self, board):
+        black = white = 0
+        for r in range(board.shape[0]):
+            for c in range(board.shape[1]):
+                if board[r,c] == 1:
+                    black += 1
+                elif board[r,c] == -1:
+                    white += 1
+
+        return black, white
 
     def paintEvent(self, event):
         painter = QtGui.QPainter()
@@ -105,12 +124,12 @@ class Othello_Widget(QtWidgets.QWidget):
             for c in range(8):
                 if self.app.board[r,c] == 1:
                     if self.winner == -1 or self.winner == 0:
-                        self.draw_black(painter, (r, c), 0.5)
+                        self.draw_black(painter, (r, c), 0.6)
                     else:
                         self.draw_black(painter, (r, c), 1)
                 elif self.app.board[r,c] == -1:
                     if self.winner == 1 or self.winner == 0:
-                        self.draw_white(painter, (r, c), 0.5)
+                        self.draw_white(painter, (r, c), 0.6)
                     else:
                         self.draw_white(painter, (r, c), 1)
 
