@@ -101,11 +101,11 @@ class Othello_Rules(Rules):
 
     def result(self, board, player):
         if self.is_winner(board, player):
-            return 1
+            return 1.0
         elif self.is_winner(board, -player):
-            return -1
+            return -1.0
         else:
-            return 0
+            return 0.0
 
     def is_winner(self, board, player):
         score = np.sum(board)

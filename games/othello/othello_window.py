@@ -1,8 +1,11 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtGui import QFont
 import numpy as np
+from minimax import Minimax
+from mcts import MCTS
 
 class Othello_Window(QtWidgets.QMainWindow):
-    def __init__(self, game_rules, mcts, args):
+    def __init__(self, game_rules, policy, args):
         super().__init__()
         self.setAutoFillBackground(True)
         p = self.palette()
@@ -10,7 +13,7 @@ class Othello_Window(QtWidgets.QMainWindow):
         self.setPalette(p)
 
         self.game_rules = game_rules
-        self.mcts = mcts
+        self.policy = policy
         self.args = args
         self.cur_player = 1
         self.nnet_turn = -1
@@ -35,11 +38,11 @@ class Othello_Window(QtWidgets.QMainWindow):
     def step(self):
         if self.cur_player == self.nnet_turn and not self.game_rules.terminal(self.board):
             board_perspective = self.game_rules.perspective(self.board, self.cur_player)
-            self.mcts.tree_search(board_perspective)
-            pi = self.mcts.get_policy(board_perspective, t=0)
+            pi = self.policy.get_policy(board_perspective, t=0)
             action = np.argmax(pi)
             self.board, self.cur_player = self.game_rules.step(self.board, action, self.cur_player)
             self.othello_widget.draw()
+
         elif not self.game_rules.terminal(self.board):
             if sum(self.game_rules.get_valid_actions(self.board, -self.nnet_turn)) == 0:
                 self.board, self.cur_player = self.game_rules.step(self.board, 0, self.cur_player)
@@ -64,9 +67,8 @@ class Othello_Widget(QtWidgets.QWidget):
         p = self.palette()
         p.setColor(self.backgroundRole(), QtGui.QColor(60, 130, 60))
         self.setPalette(p)
-        self.winner = None
-
         self.app = app
+        self.winner = None
         self.show()
 
     def draw(self):

@@ -62,10 +62,8 @@ class Pit:
             board_perspective = self.game_rules.perspective(board, cur_player)
 
             if cur_player == 1:
-                mcts1.tree_search(board_perspective)
                 pi = mcts1.get_policy(board_perspective, t=0)
             else:
-                mcts2.tree_search(board_perspective)
                 pi = mcts2.get_policy(board_perspective, t=0)
 
             action = np.argmax(pi)

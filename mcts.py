@@ -17,6 +17,8 @@ class MCTS:
         self.P = defaultdict(float)
 
     def get_policy(self, board, t):
+        self.tree_search(board)
+
         s = self.game_rules.tostring(board)
         raw_pi = [self.N[(s, a)] for a in range(self.game_rules.get_action_space())]
         
