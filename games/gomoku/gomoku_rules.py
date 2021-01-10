@@ -31,15 +31,6 @@ class Gomoku_Rules(Rules):
     def perspective(self, board, player):
         return board * player
 
-    def get_equal_positions(self, board, pi):
-        # TODO rotate board to get more equal positions
-        positions = [(board, pi)]
-
-        positions.append((np.flip(board, 0), np.flip(np.array(pi).reshape(board.shape), 0).flatten()))
-        positions.append((np.flip(board, 1), np.flip(np.array(pi).reshape(board.shape), 1).flatten()))
-
-        return positions
-        
     def tostring(self, board):
         return board.tostring()
 

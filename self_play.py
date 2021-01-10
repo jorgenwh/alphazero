@@ -32,7 +32,6 @@ class Self_Play:
         Relevant game data is stored for each action taken during the episode. At the end of the episode
         the actual training data is created by adding the winner/loser of the game.
         """
-        exploration_temp_threshold = np.random.randint(30, 64)
         sequence = []
         board = self.game_rules.start_board()
         cur_player = 1
@@ -40,11 +39,9 @@ class Self_Play:
 
         while not self.game_rules.terminal(board):
             board_perspective = self.game_rules.perspective(board, cur_player)
-            pi = mcts.get_policy(board_perspective, int(ply + 1 < exploration_temp_threshold))
+            pi = mcts.get_policy(board_perspective, self.args.temperature)
 
-            equal_positions = self.game_rules.get_equal_positions(board_perspective, pi)
-            for board_, pi_ in equal_positions:
-                sequence.append((board_, pi_, cur_player))
+            sequence.append((board_perspective, pi, cur_player))
 
             action = np.random.choice(self.game_rules.get_action_space(), p=pi)
             board, cur_player = self.game_rules.step(board, action, cur_player)

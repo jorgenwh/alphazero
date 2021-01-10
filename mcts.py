@@ -44,7 +44,7 @@ class MCTS:
         """
         Runs the monte carlo simulations.
         """
-        for _ in range(self.args.monte_carlo_simulations):
+        for _ in range(self.args.monte_carlo_sims):
             self.simulate(board)
 
     def simulate(self, board):

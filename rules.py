@@ -2,7 +2,7 @@
 class Rules:
     """
     Abstract game-rules class.
-    For any new games implemented, all of the below methods are assumed implemented.
+    For any new games, implement all of the below methods.
     """
     def __init__(self):
         pass
@@ -20,9 +20,6 @@ class Rules:
         raise NotImplementedError
 
     def perspective(self, board, player):
-        raise NotImplementedError
-
-    def get_equal_positions(self, board, pi):
         raise NotImplementedError
 
     def tostring(self, board):

@@ -3,7 +3,6 @@ import numpy as np
 from tqdm import tqdm
 
 from .connect4_model import Connect4_Model
-from .connect4_model import Connect4_ResNet, BasicBlock, Dual_Conv
 from utils import Average_Meter
 
 class Connect4_Network:
@@ -11,11 +10,7 @@ class Connect4_Network:
         self.game_rules = game_rules
         self.args = args
         self.device = torch.device("cuda:0" if torch.cuda.is_available() and self.args.cuda else "cpu")
-        #self.model = Connect4_Model(self.args).to(self.device)
-        #self.model = Connect4_ResNet(BasicBlock, [3, 4, 6, 3], num_classes=7).to(self.device)
-        self.model = Dual_Conv(self.args)
-        self.model.to_device(self.device)
-        
+        self.model = Connect4_Model(self.args).to(self.device)
         self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.args.lr)
         
     def evaluate(self, board):

@@ -15,7 +15,7 @@ class Othello_Network:
         
     def evaluate(self, board):
         self.model.eval()
-        b = board.reshape(1, 1, 8, 8)
+        b = board.reshape(1, 1, self.args.othello_size, self.args.othello_size)
         b = torch.FloatTensor(b).to(self.device)
 
         with torch.no_grad():
