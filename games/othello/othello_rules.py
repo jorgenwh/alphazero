@@ -109,3 +109,6 @@ class Othello_Rules(Rules):
         else:
             return score < 0
             
+    def name(self):
+        return "Othello"
+        

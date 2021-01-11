@@ -19,10 +19,10 @@ class AlphaZero:
         self.args = args
 
         self.oppnnet = nn_class(self.game_rules, self.args)
-        self.sess_num = setup_session()
+        self.sess_num = setup_session(self.game_rules, self.args)
         self.checkpoint_num = 0
-        save_checkpoint(self.nnet, self.sess_num, self.checkpoint_num)
-        load_checkpoint(self.oppnnet, self.sess_num, self.checkpoint_num)
+        save_checkpoint(self.nnet, self.sess_num, self.checkpoint_num, self.args)
+        load_checkpoint(self.oppnnet, self.sess_num, self.checkpoint_num, self.args)
         self.training_data = deque(maxlen=self.args.play_memory)
 
     def train(self):
@@ -68,11 +68,11 @@ class AlphaZero:
         if score >= self.args.eval_score_threshold:
             print("Checkpoint Accepted")
             self.checkpoint_num += 1
-            save_checkpoint(self.nnet, self.sess_num, self.checkpoint_num)
-            load_checkpoint(self.oppnnet, self.sess_num, self.checkpoint_num)
+            save_checkpoint(self.nnet, self.sess_num, self.checkpoint_num, self.args)
+            load_checkpoint(self.oppnnet, self.sess_num, self.checkpoint_num, self.args)
         else:
             print("Checkpoint Discarded")
-            load_checkpoint(self.nnet, self.sess_num, self.checkpoint_num)
+            load_checkpoint(self.nnet, self.sess_num, self.checkpoint_num, self.args)
 
         print(f"Checkpoint: {self.checkpoint_num}\n\n")
         

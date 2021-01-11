@@ -33,4 +33,7 @@ class Rules:
 
     def is_winner(self, board, player):
         raise NotImplementedError
+
+    def name(self):
+        raise NotImplementedError
     

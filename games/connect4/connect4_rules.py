@@ -70,4 +70,7 @@ class Connect4_Rules(Rules):
                     return True
 
         return False
+
+    def name(self):
+        return "Connect 4"
         

@@ -67,4 +67,7 @@ class Gomoku_Rules(Rules):
                     return True
 
         return False
+
+    def name(self):
+        return "Gomoku"
         

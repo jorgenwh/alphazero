@@ -1,7 +1,8 @@
 import os
 import torch
+from datetime import datetime
 
-def setup_session():
+def setup_session(game_rules, args):
     """
     Setup a session folder containing the model-checkpoints folder.
     
@@ -13,15 +14,23 @@ def setup_session():
         os.mkdir("sessions")
 
     num = 0
-    while os.path.isdir("sessions/session" + str(num) + "/"):
+    while os.path.isdir("sessions/session_" + args.game + "_" + str(num)):
         num += 1
 
-    os.mkdir("sessions/session" + str(num))
-    os.mkdir("sessions/session" + str(num) + "/model-checkpoints")
+    os.mkdir("sessions/session_" + args.game + "_" + str(num))
+    os.mkdir("sessions/session_" + args.game + "_" + str(num) + "/model-checkpoints")
+
+    f = open("sessions/session_" + args.game + "_" + str(num) + "/info.txt", "w")
+    content = f"Session {num}\n\nGame: {game_rules.name()}"
+    if hasattr(game_rules, "size"):
+        content += f" (size: {game_rules.size})"
+    content += f"\n\nStarted at: {datetime.now()}"[:-7] + f" (Y-M-D H:M:S)\n\nResidual blocks: {args.res}"
+    f.write(content)
+
     return num
 
-def save_checkpoint(nnet, sess_num, checkpoint_num):
-    folder = "sessions/session" + str(sess_num) + "/model-checkpoints/"
+def save_checkpoint(nnet, sess_num, checkpoint_num, args):
+    folder = "sessions/session_" + args.game + "_" + str(sess_num) + "/model-checkpoints/"
     name = "nnet_checkpoint" + str(checkpoint_num)
 
     if os.path.isfile(os.path.join(folder, name)):
@@ -29,8 +38,8 @@ def save_checkpoint(nnet, sess_num, checkpoint_num):
     
     torch.save(nnet.model.state_dict(), os.path.join(folder, name))
 
-def load_checkpoint(nnet, sess_num, checkpoint_num):
-    folder = "sessions/session" + str(sess_num) + "/model-checkpoints/"
+def load_checkpoint(nnet, sess_num, checkpoint_num, args):
+    folder = "sessions/session_" + args.game + "_" + str(sess_num) + "/model-checkpoints/"
     name = "nnet_checkpoint" + str(checkpoint_num)
     assert os.path.isfile(os.path.join(folder, name))
 
