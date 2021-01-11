@@ -24,7 +24,7 @@ def setup_session(game_rules, args):
     content = f"Session {num}\n\nGame: {game_rules.name()}"
     if hasattr(game_rules, "size"):
         content += f" (size: {game_rules.size})"
-    content += f"\n\nStarted at: {datetime.now()}"[:-7] + f" (Y-M-D H:M:S)\n\nResidual blocks: {args.res}"
+    content += f"\n\nStarted at: {datetime.now()}"[:-7] + f" (Y-M-D H:M:S)\n\nResidual blocks: {args.res_blocks}"
     f.write(content)
 
     return num

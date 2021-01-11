@@ -34,7 +34,7 @@ class TicTacToe_Model(nn.Module):
         )
         
         self.residual_blocks = []
-        for _ in range(self.args.res):
+        for _ in range(self.args.res_blocks):
             self.residual_blocks.append(Residual_Block())
         self.residual_tower = nn.Sequential(*self.residual_blocks)
         

@@ -13,7 +13,7 @@ def get_args():
     parser.add_argument("--monte_carlo_sims", help="Number of monte-carlo simulations performed for each move chosen.", type=int, default=50)
 
     # Neural Network
-    parser.add_argument("--res", help="Number of residual blocks in residual neural network models.", type=int, default=8)
+    parser.add_argument("--res_blocks", help="Number of residual blocks in residual neural network models.", type=int, default=8)
     parser.add_argument("--lr", help="Neural network learning rate.", type=float, default=1e-3)
     parser.add_argument("--epochs", help="Neural network training epochs (per iteration).", type=int, default=10)
     parser.add_argument("--batch_size", help="Neural network training batch size.", type=int, default=64)
