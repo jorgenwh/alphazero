@@ -1,7 +1,7 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import numpy as np
 
-class Connect4_Window(QtWidgets.QMainWindow):
+class Connect4Window(QtWidgets.QMainWindow):
     def __init__(self, game_rules, policy, args):
         super().__init__()
         self.game_rules = game_rules
@@ -24,7 +24,7 @@ class Connect4_Window(QtWidgets.QMainWindow):
         self.setCentralWidget(self.centralWidget)
         self.setGeometry(750, 280, (50*7) - 5, (50*6) + 50)
 
-        self.connect4_widget = Connect4_Widget(self.centralWidget, self)
+        self.connect4_widget = Connect4Widget(self.centralWidget, self)
         self.connect4_widget.setGeometry(20, 20, 45*7 + 10*6, 60*6)
 
     def step(self):
@@ -47,7 +47,7 @@ class Connect4_Window(QtWidgets.QMainWindow):
                 self.connect4_widget.draw()
 
 
-class Connect4_Widget(QtWidgets.QWidget):
+class Connect4Widget(QtWidgets.QWidget):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app

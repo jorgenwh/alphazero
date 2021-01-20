@@ -1,8 +1,7 @@
 import numpy as np
-
 from rules import Rules
 
-class Othello_Rules(Rules):
+class OthelloRules(Rules):
     def __init__(self, size):
         self.size = size
 

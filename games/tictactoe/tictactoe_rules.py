@@ -1,8 +1,7 @@
 import numpy as np
-
 from rules import Rules
 
-class TicTacToe_Rules(Rules):
+class TicTacToeRules(Rules):
     def __init__(self):
         pass
 
@@ -63,4 +62,4 @@ class TicTacToe_Rules(Rules):
         return False
 
     def name(self):
-        return "Tic Tac Toe"
+        return "TicTacToe"

@@ -4,7 +4,7 @@ import numpy as np
 from minimax import Minimax
 from mcts import MCTS
 
-class Othello_Window(QtWidgets.QMainWindow):
+class OthelloWindow(QtWidgets.QMainWindow):
     def __init__(self, game_rules, policy, args):
         super().__init__()
         self.setAutoFillBackground(True)
@@ -33,7 +33,7 @@ class Othello_Window(QtWidgets.QMainWindow):
         self.setCentralWidget(self.centralWidget)
         self.setGeometry(750, 280, 65*self.size + 50, 65*self.size + 50)
 
-        self.othello_widget = Othello_Widget(self.centralWidget, self)
+        self.othello_widget = OthelloWidget(self.centralWidget, self)
         self.othello_widget.setGeometry(25, 25, 65*self.size, 65*self.size)
 
     def step(self):
@@ -61,7 +61,7 @@ class Othello_Window(QtWidgets.QMainWindow):
                 self.othello_widget.draw()
 
 
-class Othello_Widget(QtWidgets.QWidget):
+class OthelloWidget(QtWidgets.QWidget):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.setAutoFillBackground(True)

@@ -24,7 +24,7 @@ def setup_session(game_rules, args):
     content = f"Session {num}\n\nGame: {game_rules.name()}"
     if hasattr(game_rules, "size"):
         content += f" (size: {game_rules.size})"
-    content += f"\n\nStarted at: {datetime.now()}"[:-7] + f" (Y-M-D H:M:S)\n\nResidual blocks: {args.res_blocks}"
+    content += f"\n\nStarted at: {datetime.now()}"[:-7] + f" (Y-M-D H:M:S)\n\nResidual blocks: {args.residual_blocks}"
     f.write(content)
 
     return num
@@ -45,24 +45,23 @@ def load_checkpoint(nnet, sess_num, checkpoint_num, args):
 
     nnet.model.load_state_dict(torch.load(os.path.join(folder, name)))
 
-def save_model(nnet, name):
-    if not os.path.isdir("models/"):
-        os.mkdir("models")
+def save_model(nnet, folder, name):
+    if not os.path.isdir(folder):
+        raise FileNotFoundError(f"Folder '{folder}' not found.")
 
     n = 0
-    while os.path.isfile("models/" + name + str(n)):
+    while os.path.isfile(folder + name + str(n)):
         n += 1
     
-    torch.save(nnet.model.state_dict(), os.path.join("models/", name + str(n)))
+    torch.save(nnet.model.state_dict(), os.path.join(folder, name + str(n)))
 
-def load_model(nnet, name):
-    folder = "models/"
+def load_model(nnet, folder, name):
     if not os.path.isfile(os.path.join(folder, name)):
         raise FileNotFoundError(f"Cannot find model '{os.path.join(folder, name)}'")
 
     nnet.model.load_state_dict(torch.load(os.path.join(folder, name)))
 
-class Average_Meter(object):
+class AverageMeter(object):
     """
     Average meter from pytorch.
     """

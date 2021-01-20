@@ -1,8 +1,7 @@
 import numpy as np
-
 from rules import Rules
 
-class Gomoku_Rules(Rules):
+class GomokuRules(Rules):
     def __init__(self, size):
         self.size = size
 

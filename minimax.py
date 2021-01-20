@@ -1,9 +1,9 @@
 import numpy as np
 
-from games.connect4.connect4_rules import Connect4_Rules
-from games.othello.othello_rules import Othello_Rules
-from games.tictactoe.tictactoe_rules import TicTacToe_Rules
-from games.gomoku.gomoku_rules import Gomoku_Rules
+from games.connect4.connect4_rules import Connect4Rules
+from games.othello.othello_rules import OthelloRules
+from games.tictactoe.tictactoe_rules import TicTacToeRules
+from games.gomoku.gomoku_rules import GomokuRules
 
 class Minimax:
     """

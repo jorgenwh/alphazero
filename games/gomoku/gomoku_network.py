@@ -2,20 +2,20 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
-from .gomoku_model import Gomoku_Model
-from utils import Average_Meter
+from .gomoku_model import GomokuModel
+from utils import AverageMeter
 
-class Gomoku_Network:
+class GomokuNetwork:
     def __init__(self, game_rules, args):
         self.game_rules = game_rules
         self.args = args
         self.device = torch.device("cuda:0" if torch.cuda.is_available() and self.args.cuda else "cpu")
-        self.model = Gomoku_Model(self.args).to(self.device)
-        self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.args.lr)
+        self.model = GomokuModel(self.args).to(self.device)
+        self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.args.learning_rate)
         
     def evaluate(self, board):
         self.model.eval()
-        b = board.reshape(1, 1, self.args.size, self.args.size)
+        b = board.reshape(1, 1, self.args.gomoku_size, self.args.gomoku_size)
         b = torch.FloatTensor(b).to(self.device)
 
         with torch.no_grad():
@@ -30,7 +30,7 @@ class Gomoku_Network:
         for epoch in range(self.args.epochs):
             print(f"Epoch: {epoch+1}/{self.args.epochs}")
             steps = int(len(training_data) / self.args.batch_size)
-            epoch_loss = Average_Meter()
+            epoch_loss = AverageMeter()
 
             t = tqdm(range(steps), desc="Training")
             for _ in t:

@@ -1,7 +1,7 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import numpy as np
 
-class TicTacToe_Window(QtWidgets.QMainWindow):
+class TicTacToeWindow(QtWidgets.QMainWindow):
     def __init__(self, game_rules, policy, args):
         super().__init__()
         self.game_rules = game_rules
@@ -24,7 +24,7 @@ class TicTacToe_Window(QtWidgets.QMainWindow):
         self.setCentralWidget(self.centralWidget)
         self.setGeometry(750, 280, 350, 350)
 
-        self.tictactoe_widget = TicTacToe_Widget(self.centralWidget, self)
+        self.tictactoe_widget = TicTacToeWidget(self.centralWidget, self)
         self.tictactoe_widget.setGeometry(40, 40, 270, 270)
 
     def step(self):
@@ -47,7 +47,7 @@ class TicTacToe_Window(QtWidgets.QMainWindow):
                 self.tictactoe_widget.draw()
 
 
-class TicTacToe_Widget(QtWidgets.QWidget):
+class TicTacToeWidget(QtWidgets.QWidget):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app

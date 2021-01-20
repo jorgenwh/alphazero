@@ -2,16 +2,16 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
-from .connect4_model import Connect4_Model
-from utils import Average_Meter
+from .connect4_model import Connect4Model
+from utils import AverageMeter
 
-class Connect4_Network:
+class Connect4Network:
     def __init__(self, game_rules, args):
         self.game_rules = game_rules
         self.args = args
         self.device = torch.device("cuda:0" if torch.cuda.is_available() and self.args.cuda else "cpu")
-        self.model = Connect4_Model(self.args).to(self.device)
-        self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.args.lr)
+        self.model = Connect4Model(self.args).to(self.device)
+        self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.args.learning_rate)
         
     def evaluate(self, board):
         self.model.eval()
@@ -30,7 +30,7 @@ class Connect4_Network:
         for epoch in range(self.args.epochs):
             print(f"Epoch: {epoch+1}/{self.args.epochs}")
             steps = int(len(training_data) / self.args.batch_size)
-            epoch_loss = Average_Meter()
+            epoch_loss = AverageMeter()
 
             t = tqdm(range(steps), desc="Training")
             for _ in t:

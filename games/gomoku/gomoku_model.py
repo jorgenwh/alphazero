@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-class Residual_Block(nn.Module):
+class ResidualBlock(nn.Module):
     def __init__(self):
-        super(Residual_Block, self).__init__()
+        super(ResidualBlock, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(256)
         self.conv2 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=1, padding=1)
@@ -22,9 +22,9 @@ class Residual_Block(nn.Module):
         return r
         
 
-class Gomoku_Model(nn.Module):
+class GomokuModel(nn.Module):
     def __init__(self, args):
-        super(Gomoku_Model, self).__init__()
+        super(GomokuModel, self).__init__()
         self.args = args
         
         self.conv_block = nn.Sequential(
@@ -34,13 +34,13 @@ class Gomoku_Model(nn.Module):
         )
         
         self.residual_blocks = []
-        for _ in range(self.args.res_blocks):
-            self.residual_blocks.append(Residual_Block())
+        for _ in range(self.args.residual_blocks):
+            self.residual_blocks.append(ResidualBlock())
         self.residual_tower = nn.Sequential(*self.residual_blocks)
         
         # policy
         self.pi_conv_bn = self.conv_bn(256, 2, kernel_size=1, stride=1)
-        self.pi = nn.Linear(2 * 6 * 7, self.args.gomoku_size ** 2)
+        self.pi = nn.Linear(2 * self.args.gomoku_size ** 2, self.args.gomoku_size ** 2)
 
         # value
         self.v_conv_bn = self.conv_bn(256, 1, kernel_size=1, stride=1)

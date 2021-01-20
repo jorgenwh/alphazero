@@ -1,7 +1,7 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import numpy as np
 
-class Gomoku_Window(QtWidgets.QMainWindow):
+class GomokuWindow(QtWidgets.QMainWindow):
     def __init__(self, game_rules, policy, args):
         super().__init__()
         self.setAutoFillBackground(True)
@@ -29,7 +29,7 @@ class Gomoku_Window(QtWidgets.QMainWindow):
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
         self.setGeometry(1500, 330, 350, 350)
-        self.gomoku_widget = Gomoku_Widget(self.centralWidget, self)
+        self.gomoku_widget = GomokuWidget(self.centralWidget, self)
         self.gomoku_widget.setGeometry(40, 40, 40*self.size, 40*self.size)
 
     def step(self):
@@ -52,7 +52,7 @@ class Gomoku_Window(QtWidgets.QMainWindow):
                 self.gomoku_widget.draw()
 
 
-class Gomoku_Widget(QtWidgets.QWidget):
+class GomokuWidget(QtWidgets.QWidget):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
