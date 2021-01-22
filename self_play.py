@@ -46,7 +46,7 @@ class Self_Play:
             action = np.random.choice(self.game_rules.get_action_space(), p=pi)
             board, cur_player = self.game_rules.step(board, action, cur_player)
             ply += 1
-
+        
         value = self.game_rules.result(board, 1)
         for board, pi, player in sequence:
             v = (1 if player == value else -1) if value else 0

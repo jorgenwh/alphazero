@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import torch
 import numpy as np
 from tqdm import tqdm
@@ -7,7 +8,7 @@ from collections import deque
 
 from self_play import Self_Play
 from pit import Pit
-from utils import setup_session, save_checkpoint, load_checkpoint, save_model
+from utils import setup_session, save_checkpoint, load_checkpoint, save_model, get_time_stamp
 
 class AlphaZero:
     """
@@ -48,6 +49,7 @@ class AlphaZero:
             - Evaluate the updated network against the latest checkpoint to determine whether to 
                 checkpoint the updated network or delete it.
         """
+        st = time.time()
         print(f"\nSelf-play: ({self.args.episodes} episodes)")
         self_play = Self_Play(self.game_rules, self.nnet, self.args)
         training_data = self_play.play()
@@ -74,5 +76,7 @@ class AlphaZero:
             print("Checkpoint Discarded")
             load_checkpoint(self.nnet, self.sess_num, self.checkpoint_num, self.args)
 
+        t = get_time_stamp(time.time() - st)
+        print("Iteration time: {t}")
         print(f"Checkpoint: {self.checkpoint_num}\n\n")
         

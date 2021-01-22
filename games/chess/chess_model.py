@@ -28,7 +28,7 @@ class ChessModel(nn.Module):
         self.args = args
         
         self.conv_block = nn.Sequential(
-            nn.Conv2d(6, 256, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(12, 256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(256),
             nn.ReLU()
         )
@@ -40,8 +40,7 @@ class ChessModel(nn.Module):
         
         # policy
         self.pi_conv_bn = self.conv_bn(256, 2, kernel_size=1, stride=1)
-        self.pi = nn.Conv2d(2, 2, kernel_size=1, stride=1)
-        #self.pi = nn.Linear(2 * 8 * 8, 7)
+        self.pi = nn.Linear(2 * 8 ** 2, 4096)
 
         # value
         self.v_conv_bn = self.conv_bn(256, 1, kernel_size=1, stride=1)
@@ -55,7 +54,7 @@ class ChessModel(nn.Module):
         )
         
     def forward(self, x):
-        x = x.reshape(x.shape[0], 1, 8, 8)
+        x = x.reshape(x.shape[0], 12, 8, 8)
         r = self.conv_block(x)
         r = self.residual_tower(r)
 

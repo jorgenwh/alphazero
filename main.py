@@ -29,6 +29,7 @@ from games.chess.chess_network import ChessNetwork
 from games.chess.chess_window import ChessWindow
 
 if __name__ == "__main__":
+    sys.setrecursionlimit(2000)
     games_sets = {
         "connect4": (Connect4Rules, Connect4Network, Connect4Window),
         "tictactoe": (TicTacToeRules, TicTacToeNetwork, TicTacToeWindow),

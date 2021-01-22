@@ -61,6 +61,11 @@ def load_model(nnet, folder, name):
 
     nnet.model.load_state_dict(torch.load(os.path.join(folder, name)))
 
+def get_time_stamp(s):
+    t_s = str(datetime.timedelta(seconds=round(s)))
+    ts = t_s.split(':')
+    return '(' + ts[0] + 'h ' + ts[1] + 'm ' + ts[2] + 's)'
+
 class AverageMeter(object):
     """
     Average meter from pytorch.

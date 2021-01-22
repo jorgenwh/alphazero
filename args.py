@@ -28,7 +28,7 @@ args = Arguments({
 
     # Game and game-size
     "game": "chess",
-    "minimax": "a",
+    "minimax": None,
     "gomoku_size": 19,
     "othello_size": 8
 })

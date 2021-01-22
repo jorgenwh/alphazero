@@ -15,7 +15,8 @@ class ChessNetwork:
         
     def evaluate(self, board):
         self.model.eval()
-        b = board.reshape(1, 1, 6, 7)
+        b = board.reshape(1, 12, 8, 8)
+        b = b.copy() # fix to avoid negative numpy ndarray strides? 
         b = torch.FloatTensor(b).to(self.device)
 
         with torch.no_grad():
@@ -37,7 +38,7 @@ class ChessNetwork:
                 indices = np.random.randint(len(training_data), size=self.args.batch_size)
                 boards, pis, vs = list(zip(*[training_data[i] for i in indices]))
                 
-                boards = torch.FloatTensor(boards).to(self.device).reshape(self.args.batch_size, 1, 6, 7)
+                boards = torch.FloatTensor(boards).to(self.device).reshape(self.args.batch_size, 12, 8, 8)
                 pis = torch.FloatTensor(pis).to(self.device)
                 vs = torch.FloatTensor(vs).to(self.device)
 
