@@ -1,7 +1,6 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtGui import QFont
 import numpy as np
-from minimax import Minimax
 from mcts import MCTS
 
 class OthelloWindow(QtWidgets.QMainWindow):
@@ -17,7 +16,7 @@ class OthelloWindow(QtWidgets.QMainWindow):
         self.args = args
         self.cur_player = 1
         self.nnet_turn = -1
-        self.board = self.game_rules.start_board()
+        self.board = self.game_rules.get_start_board()
         self.size = self.args.othello_size
 
         self.init_window()
@@ -51,7 +50,7 @@ class OthelloWindow(QtWidgets.QMainWindow):
 
     def player_step(self, action):
         if self.game_rules.terminal(self.board):
-            self.board = self.game_rules.start_board()
+            self.board = self.game_rules.get_start_board()
             self.cur_player = 1
             self.nnet_turn *= -1
             self.othello_widget.draw()

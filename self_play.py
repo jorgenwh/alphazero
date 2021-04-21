@@ -5,7 +5,7 @@ from mcts import MCTS
 
 class Self_Play:
     """
-    Self-play class.
+    Class to oversee self-play
     """
     def __init__(self, game_rules, nnet, args):
         self.game_rules = game_rules
@@ -14,26 +14,15 @@ class Self_Play:
         self.training_data = []
 
     def play(self):
-        """
-        Performs args.episodes games of self-play using the neural network before returning the generated
-        game data.
-
-        A MCTS is initiated at the beginning of each game, and remains until the end of the game,
-        opposed to creating a new MCTS for each move.
-        """
         for sp in tqdm(range(self.args.episodes), desc="Self-play"):
             mcts = MCTS(self.game_rules, self.nnet, self.args)
-            self.play_game(mcts)
+            self.play_single_game(mcts)
+
         return self.training_data
 
-    def play_game(self, mcts):
-        """
-        Performs a single episode of self-play using the provided MCTS object.
-        Relevant game data is stored for each action taken during the episode. At the end of the episode
-        the actual training data is created by adding the winner/loser of the game.
-        """
+    def play_single_game(self, mcts):
         sequence = []
-        board = self.game_rules.start_board()
+        board = self.game_rules.get_start_board()
         cur_player = 1
         ply = 0
 

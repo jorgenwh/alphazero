@@ -24,7 +24,7 @@ class GomokuRules(Rules):
                     valid_actions[r*self.size + c] = 1
         return valid_actions
 
-    def start_board(self):
+    def get_start_board(self):
         return np.zeros((self.size, self.size))
 
     def perspective(self, board, player):
@@ -45,22 +45,22 @@ class GomokuRules(Rules):
             return 0.0
 
     def is_winner(self, board, player):
-        for c in range(self.size-4):
+        for c in range(self.size - 4):
             for r in range(self.size):
                 if board[r,c] == board[r,c+1] == board[r,c+2] == board[r,c+3] == board[r,c+4] == player:
                     return True
 
         for c in range(self.size):
-            for r in range(self.size-4):
+            for r in range(self.size - 4):
                 if board[r,c] == board[r+1,c] == board[r+2,c] == board[r+3,c] == board[r+4,c] == player:
                     return True
 
-        for c in range(self.size-4):
-            for r in range(self.size-4):
+        for c in range(self.size - 4):
+            for r in range(self.size - 4):
                 if board[r,c] == board[r+1,c+1] == board[r+2,c+2] == board[r+3,c+3] == board[r+4,c+4] == player:
                     return True
 
-        for c in range(self.size-4):
+        for c in range(self.size - 4):
             for r in range(4, self.size):
                 if board[r,c] == board[r-1,c+1] == board[r-2,c+2] == board[r-3,c+3] == board[r-4,c+4] == player:
                     return True

@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 from .tictactoe_model import TicTacToeModel
-from utils import AverageMeter
+from misc import AverageMeter
 
 class TicTacToeNetwork:
     def __init__(self, game_rules, args):

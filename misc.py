@@ -1,6 +1,6 @@
 import os
 import torch
-from datetime import datetime
+import datetime
 
 def setup_session(game_rules, args):
     """
@@ -14,23 +14,23 @@ def setup_session(game_rules, args):
         os.mkdir("sessions")
 
     num = 0
-    while os.path.isdir("sessions/session_" + args.game + "_" + str(num)):
+    while os.path.isdir("sessions/" + args.game + "_session_" + str(num)):
         num += 1
 
-    os.mkdir("sessions/session_" + args.game + "_" + str(num))
-    os.mkdir("sessions/session_" + args.game + "_" + str(num) + "/model-checkpoints")
+    os.mkdir("sessions/" + args.game + "_session_" + str(num))
+    os.mkdir("sessions/" + args.game + "_session_" + str(num) + "/model-checkpoints")
 
-    f = open("sessions/session_" + args.game + "_" + str(num) + "/info.txt", "w")
+    f = open("sessions/" + args.game + "_session_" + str(num) + "/info.txt", "w")
     content = f"Session {num}\n\nGame: {game_rules.name()}"
     if hasattr(game_rules, "size"):
         content += f" (size: {game_rules.size})"
-    content += f"\n\nStarted at: {datetime.now()}"[:-7] + f" (Y-M-D H:M:S)\n\nResidual blocks: {args.residual_blocks}"
+    content += f"\n\nStarted at: {datetime.datetime.now()}"[:-7] + f"\n\nResidual blocks: {args.residual_blocks}"
     f.write(content)
 
     return num
 
 def save_checkpoint(nnet, sess_num, checkpoint_num, args):
-    folder = "sessions/session_" + args.game + "_" + str(sess_num) + "/model-checkpoints/"
+    folder = "sessions/" + args.game + "_session_" + str(sess_num) + "/model-checkpoints/"
     name = "nnet_checkpoint" + str(checkpoint_num)
 
     if os.path.isfile(os.path.join(folder, name)):
@@ -39,7 +39,7 @@ def save_checkpoint(nnet, sess_num, checkpoint_num, args):
     torch.save(nnet.model.state_dict(), os.path.join(folder, name))
 
 def load_checkpoint(nnet, sess_num, checkpoint_num, args):
-    folder = "sessions/session_" + args.game + "_" + str(sess_num) + "/model-checkpoints/"
+    folder = "sessions/" + args.game + "_session_" + str(sess_num) + "/model-checkpoints/"
     name = "nnet_checkpoint" + str(checkpoint_num)
     assert os.path.isfile(os.path.join(folder, name))
 
@@ -67,9 +67,6 @@ def get_time_stamp(s):
     return '(' + ts[0] + 'h ' + ts[1] + 'm ' + ts[2] + 's)'
 
 class AverageMeter(object):
-    """
-    Average meter from pytorch.
-    """
     def __init__(self):
         self.val = 0
         self.avg = 0
@@ -77,7 +74,7 @@ class AverageMeter(object):
         self.count = 0
 
     def __repr__(self):
-        return f"{round(self.avg, 3)}"
+        return f"{round(self.avg, 4)}"
 
     def update(self, val, n=1):
         self.val = val

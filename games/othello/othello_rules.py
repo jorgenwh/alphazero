@@ -78,7 +78,7 @@ class OthelloRules(Rules):
 
         return moves
 
-    def start_board(self):
+    def get_start_board(self):
         board = np.zeros((self.size, self.size))
         board[(self.size // 2) - 1,(self.size // 2) - 1] = board[(self.size // 2),(self.size // 2)] = -1
         board[(self.size // 2) - 1,(self.size // 2)] = board[(self.size // 2),(self.size // 2) - 1] = 1

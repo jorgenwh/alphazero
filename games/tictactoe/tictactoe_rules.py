@@ -24,7 +24,7 @@ class TicTacToeRules(Rules):
                     valid_actions[r*3 + c] = 1
         return valid_actions
 
-    def start_board(self):
+    def get_start_board(self):
         return np.zeros((3, 3))
 
     def perspective(self, board, player):
@@ -45,17 +45,14 @@ class TicTacToeRules(Rules):
             return 0.0
 
     def is_winner(self, board, player):
-        for r in range(3):
-            if board[r,0] == board[r,1] == board[r,2] == player:
+        for i in range(3):
+            if board[i,0] == board[i,1] == board[i,2] == player:
                 return True
-        
-        for c in range(3):
-            if board[0,c] == board[1,c] == board[2,c] == player:
+            if board[0,i] == board[1,i] == board[2,i] == player:
                 return True
         
         if board[0,0] == board[1,1] == board[2,2] == player:
             return True
-        
         if board[2,0] == board[1,1] == board[0,2] == player:
             return True
 

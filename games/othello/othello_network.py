@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 from .othello_model import OthelloModel
-from utils import AverageMeter
+from misc import AverageMeter
 
 class OthelloNetwork:
     def __init__(self, game_rules, args):
