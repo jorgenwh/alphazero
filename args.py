@@ -13,7 +13,7 @@ args = Arguments({
     "acceptance_threshold": 0.55,
     "temperature": 1.0,
     "cpuct": 1.0,
-    "monte_carlo_sims": 50,
+    "monte_carlo_sims": 100,
 
     # Neural network
     "residual_blocks": 8,
@@ -23,11 +23,11 @@ args = Arguments({
     "cuda": True,
 
     # Models
-    "duel": None,
+    "duel": "connect4-model",
     "model": None,
 
     # Game and game-size
-    "game": "chess",
+    "game": "connect4",
     "minimax": None,
     "gomoku_size": 19,
     "othello_size": 8
