@@ -9,7 +9,7 @@ class Connect4Window(QtWidgets.QMainWindow):
         self.args = args
         self.cur_player = 1
         self.nnet_turn = -1
-        self.board = self.game_rules.start_board()
+        self.board = self.game_rules.get_start_board()
 
         self.init_window()
         self.fps = 200
@@ -37,7 +37,7 @@ class Connect4Window(QtWidgets.QMainWindow):
 
     def player_step(self, action):
         if self.game_rules.terminal(self.board):
-            self.board = self.game_rules.start_board()
+            self.board = self.game_rules.get_start_board()
             self.cur_player = 1
             self.nnet_turn *= -1
             self.connect4_widget.draw()
@@ -111,25 +111,18 @@ class Connect4Widget(QtWidgets.QWidget):
         self.app.player_step(x)
 
     def get_winner_row(self):
-        for c in range(7-3):
-            for r in range(6):
-                if self.app.board[r,c] == self.app.board[r,c+1] == self.app.board[r,c+2] == self.app.board[r,c+3] != 0:
-                    return [(r,c), (r,c+1), (r,c+2), (r,c+3)]
-
         for c in range(7):
-            for r in range(6-3):
-                if self.app.board[r,c] == self.app.board[r+1,c] == self.app.board[r+2,c] == self.app.board[r+3,c] != 0:
-                    return [(r,c), (r+1,c), (r+2,c), (r+3,c)]
-     
-        for c in range(7-3):
-            for r in range(6-3):
-                if self.app.board[r,c] == self.app.board[r+1,c+1] == self.app.board[r+2,c+2] == self.app.board[r+3,c+3] != 0:
-                    return [(r,c), (r+1,c+1), (r+2,c+2), (r+3,c+3)]
-
-        for c in range(7-3):
-            for r in range(3, 6):
-                if self.app.board[r,c] == self.app.board[r-1,c+1] == self.app.board[r-2,c+2] == self.app.board[r-3,c+3] != 0:
-                    return [(r,c), (r-1,c+1), (r-2,c+2), (r-3,c+3)]
-
+            for r in range(6):
+                if c < 4:
+                    if self.app.board[r,c] == self.app.board[r,c+1] == self.app.board[r,c+2] == self.app.board[r,c+3] != 0:
+                        return [(r,c), (r,c+1), (r,c+2), (r,c+3)]
+                if r < 3:
+                    if self.app.board[r,c] == self.app.board[r+1,c] == self.app.board[r+2,c] == self.app.board[r+3,c] != 0:
+                        return [(r,c), (r+1,c), (r+2,c), (r+3,c)]
+                if c < 4 and r < 3:
+                    if self.app.board[r,c] == self.app.board[r+1,c+1] == self.app.board[r+2,c+2] == self.app.board[r+3,c+3] != 0:
+                        return [(r,c), (r+1,c+1), (r+2,c+2), (r+3,c+3)]
+                if c < 4 and r >= 3:
+                    if self.app.board[r,c] == self.app.board[r-1,c+1] == self.app.board[r-2,c+2] == self.app.board[r-3,c+3] != 0:
+                        return [(r,c), (r-1,c+1), (r-2,c+2), (r-3,c+3)]
         return []
-        

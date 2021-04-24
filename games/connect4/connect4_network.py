@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 from .connect4_model import Connect4Model
-from utils import AverageMeter
+from misc import AverageMeter
 
 class Connect4Network:
     def __init__(self, game_rules, args):

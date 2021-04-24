@@ -8,11 +8,11 @@ from collections import deque
 
 from self_play import Self_Play
 from pit import Pit
-from utils import setup_session, save_checkpoint, load_checkpoint, save_model, get_time_stamp
+from misc import setup_session, save_checkpoint, load_checkpoint, save_model, get_time_stamp
 
 class AlphaZero:
     """
-    The main AlphaZero class performing the overall training pipeline.
+    AlphaZero class running the training pipeline.
     """
     def __init__(self, game_rules, nnet, args, nn_class):
         self.game_rules = game_rules
@@ -27,13 +27,6 @@ class AlphaZero:
         self.training_data = deque(maxlen=self.args.play_memory)
 
     def train(self):
-        """
-        Train AlphaZero for args.iterations iterations before finally saving the resulting
-        model after all the training steps are completed.
-
-        If training is terminated before the final model is saved, the latest checkpoint model under
-        sessions/session(n)/ will contain the same weights as the latest best model.
-        """
         for i in range(self.args.iterations):
             print(f"Iteration {i+1}/{self.args.iterations}")
             self.iterate()
@@ -42,12 +35,7 @@ class AlphaZero:
 
     def iterate(self):
         """
-        Perform one training iteration:
-            - Self-play for args.episodes games to generate training data.
-            - Train the neural network on the generated training data (and previously generated 
-                training data).
-            - Evaluate the updated network against the latest checkpoint to determine whether to 
-                checkpoint the updated network or delete it.
+        Performs one iteration of the training pipeline
         """
         st = time.time()
         print(f"\nSelf-play: ({self.args.episodes} episodes)")
@@ -77,6 +65,5 @@ class AlphaZero:
             load_checkpoint(self.nnet, self.sess_num, self.checkpoint_num, self.args)
 
         t = get_time_stamp(time.time() - st)
-        print("Iteration time: {t}")
+        print(f"Iteration time: {t}")
         print(f"Checkpoint: {self.checkpoint_num}\n\n")
-        

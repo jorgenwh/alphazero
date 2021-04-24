@@ -9,7 +9,7 @@ class TicTacToeWindow(QtWidgets.QMainWindow):
         self.args = args
         self.cur_player = 1
         self.nnet_turn = -1
-        self.board = self.game_rules.start_board()
+        self.board = self.game_rules.get_start_board()
 
         self.init_window()
         self.fps = 200
@@ -37,7 +37,7 @@ class TicTacToeWindow(QtWidgets.QMainWindow):
 
     def player_step(self, action):
         if self.game_rules.terminal(self.board):
-            self.board = self.game_rules.start_board()
+            self.board = self.game_rules.get_start_board()
             self.cur_player = 1
             self.nnet_turn *= -1
             self.tictactoe_widget.draw()
@@ -113,19 +113,15 @@ class TicTacToeWidget(QtWidgets.QWidget):
         self.app.player_step(action)
 
     def get_winner_row(self):
-        for r in range(3):
-            if self.app.board[r,0] == self.app.board[r,1] == self.app.board[r,2] != 0:
-                return [(r,0), (r,1), (r,2)]
-        
-        for c in range(3):
-            if self.app.board[0,c] == self.app.board[1,c] == self.app.board[2,c] != 0:
-                return [(0,c), (1,c), (2,c)]
+        for i in range(3):
+            if self.app.board[i,0] == self.app.board[i,1] == self.app.board[i,2] != 0:
+                return [(i,0), (i,1), (i,2)]
+            if self.app.board[0,i] == self.app.board[1,i] == self.app.board[2,i] != 0:
+                return [(0,i), (1,i), (2,i)]
 
         if self.app.board[0,0] == self.app.board[1,1] == self.app.board[2,2] != 0:
             return [(0,0), (1,1), (2,2)]
-        
         if self.app.board[2,0] == self.app.board[1,1] == self.app.board[0,2] != 0:
             return [(2,0), (1,1), (0,2)]
         
         return []
-        

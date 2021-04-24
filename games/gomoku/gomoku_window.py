@@ -15,7 +15,7 @@ class GomokuWindow(QtWidgets.QMainWindow):
         self.size = self.args.size
         self.cur_player = 1
         self.nnet_turn = -1
-        self.board = self.game_rules.start_board()
+        self.board = self.game_rules.get_start_board()
 
         self.init_window()
         self.fps = 200
@@ -42,7 +42,7 @@ class GomokuWindow(QtWidgets.QMainWindow):
 
     def player_step(self, action):
         if self.game_rules.terminal(self.board):
-            self.board = self.game_rules.start_board()
+            self.board = self.game_rules.get_start_board()
             self.cur_player = 1
             self.nnet_turn *= -1
             self.gomoku_widget.draw()
@@ -122,25 +122,21 @@ class GomokuWidget(QtWidgets.QWidget):
         self.app.player_step(action)
 
     def get_winner_row(self):
-        for c in range(self.app.size-4):
-            for r in range(self.app.size):
-                if self.app.board[r,c] == self.app.board[r,c+1] == self.app.board[r,c+2] == self.app.board[r,c+3] == self.app.board[r,c+4] != 0:
-                    return [(r, c), (r,c+1), (r,c+2), (r,c+3), (r,c+4)]
-
         for c in range(self.app.size):
-            for r in range(self.app.size-4):
-                if self.app.board[r,c] == self.app.board[r+1,c] == self.app.board[r+2,c] == self.app.board[r+3,c] == self.app.board[r+4,c] != 0:
-                    return [(r, c), (r+1,c), (r+2,c), (r+3,c), (r+4,c)]
+            for r in range(self.app.size):
+                if c < self.app.size - 4:
+                    if self.app.board[r,c] == self.app.board[r,c+1] == self.app.board[r,c+2] == self.app.board[r,c+3] == self.app.board[r,c+4] != 0:
+                        return [(r, c), (r,c+1), (r,c+2), (r,c+3), (r,c+4)]
 
-        for c in range(self.app.size-4):
-            for r in range(self.app.size-4):
-                if self.app.board[r,c] == self.app.board[r+1,c+1] == self.app.board[r+2,c+2] == self.app.board[r+3,c+3] == self.app.board[r+4,c+4] != 0:
-                    return [(r, c), (r+1,c+1), (r+2,c+2), (r+3,c+3), (r+4,c+4)]
+                if r < self.app.size - 4:
+                    if self.app.board[r,c] == self.app.board[r+1,c] == self.app.board[r+2,c] == self.app.board[r+3,c] == self.app.board[r+4,c] != 0:
+                        return [(r, c), (r+1,c), (r+2,c), (r+3,c), (r+4,c)]
 
-        for c in range(self.app.size-4):
-            for r in range(4, self.app.size):
-                if self.app.board[r,c] == self.app.board[r-1,c+1] == self.app.board[r-2,c+2] == self.app.board[r-3,c+3] == self.app.board[r-4,c+4] != 0:
-                    return [(r, c), (r-1,c+1), (r-2,c+2), (r-3,c+3), (r-4,c+4)]
-                
+                if c < self.app.size - 4 and r < self.app.size - 4:
+                    if self.app.board[r,c] == self.app.board[r+1,c+1] == self.app.board[r+2,c+2] == self.app.board[r+3,c+3] == self.app.board[r+4,c+4] != 0:
+                        return [(r, c), (r+1,c+1), (r+2,c+2), (r+3,c+3), (r+4,c+4)]
+                        
+                if c < self.app.size - 4 and r >= 4:
+                    if self.app.board[r,c] == self.app.board[r-1,c+1] == self.app.board[r-2,c+2] == self.app.board[r-3,c+3] == self.app.board[r-4,c+4] != 0:
+                        return [(r, c), (r-1,c+1), (r-2,c+2), (r-3,c+3), (r-4,c+4)]
         return []
-        

@@ -7,7 +7,7 @@ class Connect4Rules(Rules):
 
     def step(self, board, action, player):
         assert self.get_valid_actions(board, player)[action]
-        r = self.lowest_row(board, action)
+        r = self.__lowest_row(board, action)
         new_board = board.copy()
         new_board[r,action] = player
         return new_board, -player
@@ -15,7 +15,7 @@ class Connect4Rules(Rules):
     def get_action_space(self):
         return 7
 
-    def lowest_row(self, board, action):
+    def __lowest_row(self, board, action):
         for r in range(5, -1, -1):
             if not board[r,action]:
                 return r
@@ -27,7 +27,7 @@ class Connect4Rules(Rules):
                 valid_actions[a] = 1
         return valid_actions
 
-    def start_board(self):
+    def get_start_board(self):
         return np.zeros((6, 7))
 
     def perspective(self, board, player):
@@ -48,28 +48,21 @@ class Connect4Rules(Rules):
             return 0.0
 
     def is_winner(self, board, player):
-        for c in range(4):
-            for r in range(6):
-                if board[r,c] == board[r,c+1] == board[r,c+2] == board[r,c+3] == player:
-                    return True
-
         for c in range(7):
-            for r in range(3):
-                if board[r,c] == board[r+1,c] == board[r+2,c] == board[r+3,c] == player:
-                    return True
-
-        for c in range(4):
-            for r in range(3):
-                if board[r,c] == board[r+1,c+1] == board[r+2,c+2] == board[r+3,c+3] == player:
-                    return True
-
-        for c in range(4):
-            for r in range(3, 6):
-                if board[r,c] == board[r-1,c+1] == board[r-2,c+2] == board[r-3,c+3] == player:
-                    return True
-
+            for r in range(6):
+                if c < 4:
+                    if board[r,c] == board[r,c+1] == board[r,c+2] == board[r,c+3] == player:
+                        return True
+                if r < 3:
+                    if board[r,c] == board[r+1,c] == board[r+2,c] == board[r+3,c] == player:
+                        return True
+                if c < 4 and r < 3:
+                    if board[r,c] == board[r+1,c+1] == board[r+2,c+2] == board[r+3,c+3] == player:
+                        return True
+                if c < 4 and r >= 3:
+                    if board[r,c] == board[r-1,c+1] == board[r-2,c+2] == board[r-3,c+3] == player:
+                        return True
         return False
 
     def name(self):
         return "Connect 4"
-        

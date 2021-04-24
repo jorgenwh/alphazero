@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 from .gomoku_model import GomokuModel
-from utils import AverageMeter
+from misc import AverageMeter
 
 class GomokuNetwork:
     def __init__(self, game_rules, args):

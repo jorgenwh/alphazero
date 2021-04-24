@@ -1,8 +1,7 @@
-
 class Rules:
     """
     Abstract game-rules class.
-    For any new games, implement all of the below methods.
+    For any new game, inherit from this class and implement all of the below methods
     """
     def __init__(self):
         pass
@@ -16,7 +15,7 @@ class Rules:
     def get_valid_actions(self, board, player):
         raise NotImplementedError
 
-    def start_board(self):
+    def get_start_board(self):
         raise NotImplementedError
 
     def perspective(self, board, player):
@@ -36,4 +35,3 @@ class Rules:
 
     def name(self):
         raise NotImplementedError
-    
