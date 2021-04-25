@@ -4,10 +4,10 @@ class Arguments(dict):
 
 args = Arguments({
     # AlphaZero
-    "iterations"            : 25,           
+    "iterations"            : 100,           
                                             # how many training iterations to perform
 
-    "episodes"              : 120,          
+    "episodes"              : 150,          
                                             # how many self-play games to play per iteration
 
     "play_memory"           : 200_000,      
@@ -22,11 +22,11 @@ args = Arguments({
     "temperature"           : 1.0,         
     "cpuct"                 : 1.0,          
 
-    "monte_carlo_sims"      : 25,           
+    "monte_carlo_sims"      : 50,           
                                             # number of node rollouts for each move
 
     # Nnet
-    "residual_blocks"       : 2,            
+    "residual_blocks"       : 8,            
                                             # number of residual blocks in the nnet.
                                             # this must match the number of residual blocks in any nnet being loaded
                                             # from /trained-models/ as they are being loaded
@@ -44,7 +44,7 @@ args = Arguments({
                                             # enable cuda
 
     # Models
-    "duel"                  : None,         
+    "duel"                  : "connect4-model_8blocks",         
                                             # the name of a model you want to play against. The model must be in
                                             # trained-models/
                                             # the 'residual_blocks' setting must match the number of residual blocks in
@@ -54,7 +54,7 @@ args = Arguments({
                                             # the name of a model you want the training to start from
 
     # Game and game-size
-    "game"                  : "gomoku",   
+    "game"                  : "connect4",   
                                             # 'connect4', 'tictactoe', 'gomoku', 'othello'
 
     "gomoku_size"           : 7,                
