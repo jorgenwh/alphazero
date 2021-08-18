@@ -27,7 +27,7 @@ class MCTS():
         s = self.rules.to_string(board)
         raw_policy = [self.N[(s, a)] for a in range(self.rules.get_action_space())]
 
-        # If t = 0, we choose the move deterministically (for competitive play)
+        # If temperature = 0, we choose the move deterministically (for competitive play)
         if temperature > 0:
             pi = [N ** (1 / temperature) for N in raw_policy]
             if sum(pi) == 0:
@@ -74,13 +74,12 @@ class MCTS():
             self.P[s] = pi
             return -value
 
-        
         # Here we select the action used to continue the search.
         # The action chosen is whatever action maximizes Q(s, a) + U(s, a) in accordance with DeepMind's
         # AlphaGo Zero paper.
         # 
-        # a(t) = argmax(Q(s, a) + U(s, a)), where
-        # U(s, a) = cpuct * P(s, a) * (sprt(N(s)) / (1 + N(s, a)))
+        #   a(t) = argmax(Q(s, a) + U(s, a)), where
+        #   U(s, a) = cpuct * P(s, a) * (sprt(N(s)) / (1 + N(s, a)))
         #
         # 'cpuct' is a constant determining the level of exploration. A small cpuct value will give more weight to
         # the action Q-value as opposed to the network's output probabilities and the amount of times the action

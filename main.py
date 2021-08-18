@@ -43,7 +43,7 @@ if __name__ == "__main__":
     
     # If we are playing against a model
     if args.play:
-        load_model(network, "trained-models", args.play)
+        load_model(network, "models", args.play)
         app = QtWidgets.QApplication(sys.argv)
         gui = Gui(rules, network, args)
         sys.exit(app.exec_())
@@ -56,7 +56,7 @@ if __name__ == "__main__":
                 print(f"Error: cannot find model 'models/{args.model}'.\nStarting training with a newly initialized model.")
             else:
                 print(f"Loading pretrained model: 'models/{args.model}'.")
-                load_model(network, "trained-models", args.model)
+                load_model(network, "models", args.model)
 
         manager = Manager(rules, network, args)
         manager.train()

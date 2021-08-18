@@ -60,7 +60,7 @@ class Manager():
         score = wins / max((wins + losses), 1)
         print(f"W: {wins} - T: {ties} - L: {losses} - Score: {round(score, 3)}")
 
-        if score >= self.args.acceptance_threshold:
+        if score > self.args.acceptance_threshold:
             print("Checkpoint Accepted")
             self.checkpoint_number += 1
             save_checkpoint(self.network, self.session_number, self.checkpoint_number, self.args)

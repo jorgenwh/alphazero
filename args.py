@@ -2,7 +2,7 @@ from alphazero.misc import Arguments
 
 args = Arguments({
     # How many training iterations to perform.
-    "iterations"            : 100,           
+    "iterations"            : 500,           
 
     # How many self-play games to play per iteration.
     "episodes"              : 150,          
