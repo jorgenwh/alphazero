@@ -2,72 +2,61 @@ import os
 import sys
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from alphazero import AlphaZero
-from mcts import MCTS
-from misc import load_model
+from alphazero.alphazero import AlphaZero
+from alphazero.network import Network
+from alphazero.mcts import MCTS
+from alphazero.misc import Arguments, load_model
+
 from args import args
 
-from games.connect4.connect4_rules import Connect4Rules
-from games.connect4.connect4_network import Connect4Network
-from games.connect4.connect4_window import Connect4Window
-
-from games.tictactoe.tictactoe_rules import TicTacToeRules
-from games.tictactoe.tictactoe_network import TicTacToeNetwork
-from games.tictactoe.tictactoe_window import TicTacToeWindow
-
-from games.gomoku.gomoku_rules import GomokuRules
-from games.gomoku.gomoku_network import GomokuNetwork
-from games.gomoku.gomoku_window import GomokuWindow
-
-from games.othello.othello_rules import OthelloRules
-from games.othello.othello_network import OthelloNetwork
-from games.othello.othello_window import OthelloWindow
-
 if __name__ == "__main__":
-    sys.setrecursionlimit(2000)
-
-    games_sets = {
-        "connect4": (Connect4Rules, Connect4Network, Connect4Window),
-        "tictactoe": (TicTacToeRules, TicTacToeNetwork, TicTacToeWindow),
-        "gomoku": (GomokuRules, GomokuNetwork, GomokuWindow),
-        "othello": (OthelloRules, OthelloNetwork, OthelloWindow),
-    }
+    game_set = ("Connect 4", "TicTacToe", "Gomoku", "Othello")
+    if args.game == "Connect 4":
+        from alphazero.games.connect4.connect4_rules import Connect4Rules as Rules
+        from alphazero.games.connect4.connect4_network import Connect4Network as Network
+        from alphazero.games.connect4.connect4_gui import Connect4Gui as Gui
+    elif args.game == "TicTacToe":
+        from alphazero.games.tictactoe.tictactoe_rules import TicTacToeRules as Rules
+        from alphazero.games.tictactoe.tictactoe_network import TicTacToeNetwork as Network
+        from alphazero.games.tictactoe.tictactoe_gui import TicTacToeGui as Gui
+    elif args.game == "Gomoku":
+        from alphazero.games.gomoku.gomoku_rules import GomokuRules as Rules
+        from alphazero.games.gomoku.gomoku_network import GomokuNetwork as Network
+        from alphazero.games.gomoku.gomoku_gui import GomokuGui as Gui
+    elif args.game == "Othello":
+        from alphazero.games.othello.othello_rules import OthelloRules as Rules
+        from alphazero.games.othello.othello_network import OthelloNetwork as Network
+        from alphazero.games.othello.othello_gui import OthelloGui as Gui
+    else:
+        raise NotImplementedError(f"Game '{args.game}' not implemented.")
 
     # Create the game rules object
-    if args.game not in games_sets:
-        raise NotImplementedError(f"Game '{args.game}' is not implemented!")
-
-    if args.game == "gomoku":
-        game_rules = games_sets[args.game][0](args.gomoku_size)
-    elif args.game == "othello":
-        assert args.othello_size % 2 == 0
-        game_rules = games_sets[args.game][0](args.othello_size)
+    if args.game == "Gomoku":
+        rules = Rules(args.gomoku_size)
+    elif args.game == "Othello":
+        rules = Rules(args.othello_size)
     else:
-        game_rules = games_sets[args.game][0]()
+        rules = Rules()
 
-    # Create a new neural network
-    nnet = games_sets[args.game][1](game_rules, args)
-
-    # If we are setting up a duel
-    if args.duel:
-        load_model(nnet, "trained-models", args.duel)
-        policy = MCTS(game_rules, nnet, args)
-        
-        app = QtWidgets.QApplication(sys.argv)
-        game_window = games_sets[args.game][2](game_rules, policy, args)
-        sys.exit(app.exec_())
+    # Create network
+    network = Network(args)
     
-    # If we are training a neural net
+    # If we are playing against a model
+    if args.play:
+        load_model(network, "trained-models", args.play)
+        app = QtWidgets.QApplication(sys.argv)
+        gui = Gui(rules, network, args)
+        sys.exit(app.exec_())
+
+    # If we are training a model
     else:
-        # If we are starting with a previous model
+        # If we are starting with a given model
         if args.model:
-            folder = "models/"
-            if not os.path.isfile(os.path.join(folder, args.model)):
-                print(f"Cannot find model '{os.path.join(folder, args.model)}'. Starting with a new model.")
-
+            if not os.path.isfile(os.path.join("models", args.model)):
+                print(f"Error: cannot find model 'models/{args.model}'.\nStarting training with a newly initialized model.")
             else:
-                print(f"Loading pretrained model: '{os.path.join(folder, args.model)}'.")
-                load_model(nnet, "models/", args.model)
+                print(f"Loading pretrained model: 'models/{args.model}'.")
+                load_model(network, "trained-models", args.model)
 
-        alphazero = AlphaZero(game_rules, nnet, args, games_sets[args.game][1])
+        alphazero = AlphaZero(rules, network, args)
         alphazero.train()

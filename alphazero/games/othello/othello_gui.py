@@ -1,0 +1,177 @@
+import numpy as np
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtGui import QFont
+from typing import List, Tuple
+
+from .othello_rules import OthelloRules
+from .othello_network import OthelloNetwork
+from alphazero.mcts import MCTS
+from alphazero.misc import Arguments
+
+class OthelloGui(QtWidgets.QMainWindow):
+    def __init__(self, rules: OthelloRules, network: OthelloNetwork, args: Arguments):
+        super().__init__()
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QtGui.QColor(80, 40, 40))
+        self.setPalette(p)
+
+        self.rules = rules
+        self.network = network
+        self.args = args
+
+        # Build the MCTS that will provide the policy from AZ
+        self.mcts = MCTS(self.rules, self.network, self.args)
+
+        # Which player is the network currently playing as {1, -1}
+        self.network_turn = -1
+
+        self.cur_player = 1
+        self.board = self.rules.get_start_board()
+        self.size = self.args.othello_size
+
+        self.init_window()
+        self.fps = 60
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.step)
+        self.timer.start(1000 / self.fps)
+        self.show()
+
+    def init_window(self) -> None:
+        self.setFixedSize(65*self.size + 50, 65*self.size + 50)
+        self.centralWidget = QtWidgets.QWidget(self)
+        self.setCentralWidget(self.centralWidget)
+        self.setGeometry(750, 280, 65*self.size + 50, 65*self.size + 50)
+
+        self.othello_widget = OthelloWidget(self.centralWidget, self)
+        self.othello_widget.setGeometry(25, 25, 65*self.size, 65*self.size)
+
+    def step(self) -> None:
+        if self.cur_player == self.network_turn and not self.rules.is_concluded(self.board):
+            perspective = self.board if self.cur_player == 1 else self.rules.flip(self.board)
+            pi = self.mcts.get_policy(perspective, temperature=0)
+            action = np.argmax(pi)
+            self.board = self.rules.step(self.board, action, self.cur_player)
+            self.cur_player *= -1
+            self.othello_widget.draw()
+
+        elif not self.rules.is_concluded(self.board):
+            if sum(self.rules.get_valid_actions(self.board, -self.network_turn)) == 0:
+                self.board = self.rules.step(self.board, 0, self.cur_player)
+                self.cur_player *= -1
+                self.othello_widget.draw()
+
+    def player_step(self, action: int) -> None:
+        if self.rules.is_concluded(self.board):
+            self.board = self.rules.get_start_board()
+            self.cur_player = 1
+            self.network_turn *= -1
+            self.othello_widget.draw()
+        else:
+            if self.rules.get_valid_actions(self.board, self.cur_player)[action] and not self.rules.is_concluded(self.board):
+                self.board = self.rules.step(self.board, action, self.cur_player)
+                self.cur_player *= -1
+                self.othello_widget.draw()
+
+class OthelloWidget(QtWidgets.QWidget):
+    def __init__(self, parent: QtWidgets.QWidget, app: OthelloGui):
+        super().__init__(parent)
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QtGui.QColor(60, 130, 60))
+        self.setPalette(p)
+        self.app = app
+        self.winner = None
+        self.show()
+
+    def draw(self):
+        if self.app.rules.is_concluded(self.app.board):
+            self.winner = self.app.rules.get_result(self.app.board)
+            if self.winner == 1:
+                winner = "BLACK"
+            elif self.winner == -1:
+                winner = "WHITE"
+            else:
+                winner = "NONE"
+            b, w = self.get_scores(self.app.board)
+            print(f"Winner: {winner} - Score B/W: {b}/{w}")
+        else:
+            self.winner = None
+
+        self.repaint()
+
+    def get_scores(self, board: np.ndarray) -> Tuple[int, int]:
+        black = white = 0
+        for r in range(self.app.size):
+            for c in range(self.app.size):
+                if board[r,c] == 1:
+                    black += 1
+                elif board[r,c] == -1:
+                    white += 1
+
+        return black, white
+
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        self.draw_board(painter)
+        self.draw_stones(painter)
+        painter.end()
+
+    def draw_board(self, painter: QtGui.QPainter) -> None:
+        painter.setRenderHints(QtGui.QPainter.Antialiasing)
+        painter.setRenderHints(QtGui.QPainter.HighQualityAntialiasing)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        painter.setPen(QtGui.QPen(QtCore.Qt.black))
+
+        right = self.frameGeometry().width()
+        bottom = self.frameGeometry().height()
+        gap = right / self.app.size
+
+        for i in range(self.app.size + 1):
+            painter.drawLine(i*gap, 0, i*gap, right)
+            painter.drawLine(0, i*gap, bottom, i*gap)
+
+    def draw_stones(self, painter: QtGui.QPainter) -> None:
+        valid_actions = self.app.rules.get_valid_actions(self.app.board, self.app.cur_player)
+
+        for r in range(self.app.size):
+            for c in range(self.app.size):
+                if self.app.board[r,c] == 1:
+                    if self.winner == -1 or self.winner == 0:
+                        self.draw_black(painter, (r, c), 0.6)
+                    else:
+                        self.draw_black(painter, (r, c), 1)
+                elif self.app.board[r,c] == -1:
+                    if self.winner == 1 or self.winner == 0:
+                        self.draw_white(painter, (r, c), 0.6)
+                    else:
+                        self.draw_white(painter, (r, c), 1)
+
+                if valid_actions[r * self.app.size + c]:
+                    if self.app.cur_player == 1:
+                        self.draw_black(painter, (r, c), 0.2)
+                    elif self.app.cur_player == -1:
+                        self.draw_white(painter, (r, c), 0.2)
+                
+    def draw_black(self, painter: QtGui.QPainter, intersection: Tuple[int, int], opacity: float) -> None:
+        painter.setBrush(QtGui.QBrush(QtGui.QColor(40, 40, 40)))
+        painter.setOpacity(opacity)
+        gap = self.frameGeometry().width() / self.app.size
+        x = 8.5 + intersection[1] * gap
+        y = 8.5 + intersection[0] * gap
+        painter.drawEllipse(x, y, gap*0.75, gap*0.75)
+    
+    def draw_white(self, painter: QtGui.QPainter, intersection: Tuple[int, int], opacity: float) -> None:
+        painter.setBrush(QtGui.QBrush(QtGui.QColor(215, 215, 215))) 
+        painter.setOpacity(opacity)
+        gap = self.frameGeometry().width() / self.app.size
+        x = 8.5 + intersection[1] * gap
+        y = 8.5 + intersection[0] * gap
+        painter.drawEllipse(x, y, gap*0.75, gap*0.75)
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        x = int(event.x() / 65)
+        y = int(event.y() / 65)
+        action = y*self.app.size + x
+        self.app.player_step(action)

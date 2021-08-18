@@ -1,6 +1,4 @@
-class Arguments(dict):
-    def __getattr__(self, attr):
-        return self[attr]
+from alphazero.misc import Arguments
 
 args = Arguments({
     # AlphaZero
@@ -10,7 +8,7 @@ args = Arguments({
     "episodes"              : 150,          
                                             # how many self-play games to play per iteration
 
-    "play_memory"           : 200_000,      
+    "replay_memory"         : 200_000,      
                                             # how many game positions to store in memory at a time
 
     "eval_matches"          : 50,           
@@ -22,10 +20,10 @@ args = Arguments({
     "temperature"           : 1.0,         
     "cpuct"                 : 1.0,          
 
-    "monte_carlo_sims"      : 50,           
+    "monte_carlo_sims"      : 200,           
                                             # number of node rollouts for each move
 
-    # Nnet
+    # Neural network 
     "residual_blocks"       : 8,            
                                             # number of residual blocks in the nnet.
                                             # this must match the number of residual blocks in any nnet being loaded
@@ -43,8 +41,8 @@ args = Arguments({
     "cuda"                  : True,         
                                             # enable cuda
 
-    # Models
-    "duel"                  : "connect4-model_8blocks",         
+    # Starting models 
+    "play"                  : "a",         
                                             # the name of a model you want to play against. The model must be in
                                             # trained-models/
                                             # the 'residual_blocks' setting must match the number of residual blocks in
@@ -54,8 +52,8 @@ args = Arguments({
                                             # the name of a model you want the training to start from
 
     # Game and game-size
-    "game"                  : "connect4",   
-                                            # 'connect4', 'tictactoe', 'gomoku', 'othello'
+    "game"                  : "Othello",   
+                                            # 'Connect 4', 'TicTacToe', 'Gomoku', 'Othello'
 
     "gomoku_size"           : 7,                
                                             # size of the gomoku board
