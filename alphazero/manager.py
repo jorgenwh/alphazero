@@ -13,9 +13,9 @@ from alphazero.network import Network
 from alphazero.mcts import MCTS
 from alphazero.misc import Arguments, session_setup, save_checkpoint, load_checkpoint, get_time_stamp
 
-class AlphaZero():
+class Manager():
     """
-    AlphaZero class running the training pipeline.
+    AlphaZero manager class running the training pipeline.
     """
     def __init__(self, rules: Rules, network: Network, args: Arguments):
         self.rules = rules

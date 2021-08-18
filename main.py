@@ -2,7 +2,7 @@ import os
 import sys
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from alphazero.alphazero import AlphaZero
+from alphazero.manager import Manager 
 from alphazero.network import Network
 from alphazero.mcts import MCTS
 from alphazero.misc import Arguments, load_model
@@ -58,5 +58,5 @@ if __name__ == "__main__":
                 print(f"Loading pretrained model: 'models/{args.model}'.")
                 load_model(network, "trained-models", args.model)
 
-        alphazero = AlphaZero(rules, network, args)
-        alphazero.train()
+        manager = Manager(rules, network, args)
+        manager.train()
