@@ -52,13 +52,13 @@ def evaluate(rules: Rules, network: Network, checkpoint_network: Network, args: 
     mcts2 = MCTS(rules, checkpoint_network, args)
     player = 1
     
-    t = tqdm(range(args.eval_matches), desc="Evaluating")
-    for _ in t:
+    bar = tqdm(range(args.eval_matches), desc="Evaluating", bar_format="{l_bar}{bar}| Games: {n_fmt}/{total_fmt} - {unit} - Elapsed: {elapsed}")
+    for _ in bar:
         result = play_episode(rules, mcts1, mcts2) if player == 1 else play_episode(rules, mcts2, mcts1)
         played += 1
         wins += (player == 1 and result == 1) or (player == -1 and result == -1)
         losses += (player == 1 and result == -1) or (player == -1 and result == 1)
-        t.set_postfix({"W/T/L": f"{wins}/{played - (wins + losses)}/{losses}"})
+        bar.unit = f"W/T/L: {wins}/{played - (wins + losses)}/{losses}"
 
     return wins, played - (wins + losses), losses
     

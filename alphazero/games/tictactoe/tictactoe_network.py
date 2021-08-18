@@ -33,8 +33,8 @@ class TicTacToeNetwork(Network):
             steps = int(len(training_examples) / self.args.batch_size)
             epoch_loss = AverageMeter()
 
-            t = tqdm(range(steps), desc="Training")
-            for _ in t:
+            bar = tqdm(range(steps), desc="Training", bar_format="{l_bar}{bar}| Updated: {n_fmt}/{total_fmt} - {unit} - Elapsed: {elapsed}")
+            for _ in bar:
                 indices = np.random.randint(len(training_examples), size=self.args.batch_size)
                 boards, pis, vs = list(zip(*[training_examples[i] for i in indices]))
                 
@@ -49,7 +49,7 @@ class TicTacToeNetwork(Network):
                 loss = pi_loss + v_loss
 
                 epoch_loss.update(loss.item(), boards.shape[0])
-                t.set_postfix(loss=epoch_loss)
+                bar.unit = f"Loss: {epoch_loss}"
 
                 self.optimizer.zero_grad()
                 loss.backward()
