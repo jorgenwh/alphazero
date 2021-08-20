@@ -33,7 +33,7 @@ def play_episode(mcts: MCTS, rules: Rules, args: Arguments) -> List[Tuple[np.nda
 def selfplay(rules: Rules, network: Network, args: Arguments) -> List[Tuple[np.ndarray, np.ndarray, float]]:
     training_examples = []
     
-    for iter in tqdm(range(args.episodes), desc="Self-Play", bar_format="{l_bar}{bar}| Games: {n_fmt}/{total_fmt} - Elapsed: {elapsed}"):
+    for iter in tqdm(range(args.episodes), desc="Self-Play", bar_format="{l_bar}{bar}| Game: {n_fmt}/{total_fmt} - Elapsed: {elapsed}"):
         mcts = MCTS(rules, network, args)
         training_examples.extend(play_episode(mcts, rules, args))
 

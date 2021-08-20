@@ -33,7 +33,7 @@ class TicTacToeNetwork(Network):
             steps = int(len(training_examples) / self.args.batch_size)
             epoch_loss = AverageMeter()
 
-            bar = tqdm(range(steps), desc="Training", bar_format="{l_bar}{bar}| Updated: {n_fmt}/{total_fmt} - {unit} - Elapsed: {elapsed}")
+            bar = tqdm(range(steps), desc="Training", bar_format="{l_bar}{bar}| Update: {n_fmt}/{total_fmt} - {unit} - Elapsed: {elapsed}")
             for _ in bar:
                 indices = np.random.randint(len(training_examples), size=self.args.batch_size)
                 boards, pis, vs = list(zip(*[training_examples[i] for i in indices]))

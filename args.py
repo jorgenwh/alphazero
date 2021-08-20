@@ -46,7 +46,7 @@ args = Arguments({
     "play"                  : None,         
     
     # The name of a model you want the training to start from.
-    "model"                 : None,         
+    "model"                 : "connect4-10block",         
 
     # 'Connect 4', 'TicTacToe', 'Gomoku', 'Othello'
     "game"                  : "Connect 4",   

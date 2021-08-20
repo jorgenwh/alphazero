@@ -50,11 +50,12 @@ def evaluate(rules: Rules, network: Network, checkpoint_network: Network, args: 
 
     mcts1 = MCTS(rules, network, args)
     mcts2 = MCTS(rules, checkpoint_network, args)
-    player = 1
+    player = 0 
     
-    bar = tqdm(range(args.eval_matches), desc="Evaluating", bar_format="{l_bar}{bar}| Games: {n_fmt}/{total_fmt} - {unit} - Elapsed: {elapsed}")
+    bar = tqdm(range(args.eval_matches), desc="Evaluating", bar_format="{l_bar}{bar}| Game: {n_fmt}/{total_fmt} - {unit} - Elapsed: {elapsed}")
     for _ in bar:
-        result = play_episode(rules, mcts1, mcts2) if player == 1 else play_episode(rules, mcts2, mcts1)
+        result = play_episode(rules, mcts1, mcts2) if player == 0 else play_episode(rules, mcts2, mcts1)
+        player = (player + 1) % 2
         played += 1
         wins += (player == 1 and result == 1) or (player == -1 and result == -1)
         losses += (player == 1 and result == -1) or (player == -1 and result == 1)
