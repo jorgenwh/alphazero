@@ -1,6 +1,6 @@
 import os
 import sys
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtWidgets
 
 from alphazero.manager import Manager 
 from alphazero.network import Network
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         from alphazero.games.othello.othello_network import OthelloNetwork as Network
         from alphazero.games.othello.othello_gui import OthelloGui as Gui
     else:
-        raise NotImplementedError(f"Game '{args.game}' not implemented.")
+        raise NotImplementedError(f"Game '{args.game}' not implemented. Implemented games are: {game_set}")
 
     # Create the game rules object
     if args.game == "Gomoku":
