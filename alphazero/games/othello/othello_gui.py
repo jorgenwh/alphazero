@@ -28,7 +28,6 @@ class OthelloGui(QtWidgets.QMainWindow):
 
         self.cur_player = 1
         self.board = self.rules.get_start_board()
-        self.size = self.args.othello_size
 
         self.init_window()
         self.fps = 60
@@ -38,13 +37,13 @@ class OthelloGui(QtWidgets.QMainWindow):
         self.show()
 
     def init_window(self) -> None:
-        self.setFixedSize(65*self.size + 50, 65*self.size + 50)
+        self.setFixedSize(65*8 + 50, 65*8 + 50)
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
-        self.setGeometry(750, 280, 65*self.size + 50, 65*self.size + 50)
+        self.setGeometry(750, 280, 65*8 + 50, 65*8 + 50)
 
         self.othello_widget = OthelloWidget(self.centralWidget, self)
-        self.othello_widget.setGeometry(25, 25, 65*self.size, 65*self.size)
+        self.othello_widget.setGeometry(25, 25, 65*8, 65*8)
 
     def step(self) -> None:
         if self.cur_player == self.network_turn and not self.rules.is_concluded(self.board):
@@ -102,8 +101,8 @@ class OthelloWidget(QtWidgets.QWidget):
 
     def get_scores(self, board: np.ndarray) -> Tuple[int, int]:
         black = white = 0
-        for r in range(self.app.size):
-            for c in range(self.app.size):
+        for r in range(8):
+            for c in range(8):
                 if board[r,c] == 1:
                     black += 1
                 elif board[r,c] == -1:
@@ -126,17 +125,17 @@ class OthelloWidget(QtWidgets.QWidget):
 
         right = self.frameGeometry().width()
         bottom = self.frameGeometry().height()
-        gap = right / self.app.size
+        gap = right / 8
 
-        for i in range(self.app.size + 1):
+        for i in range(8 + 1):
             painter.drawLine(i*gap, 0, i*gap, right)
             painter.drawLine(0, i*gap, bottom, i*gap)
 
     def draw_stones(self, painter: QtGui.QPainter) -> None:
         valid_actions = self.app.rules.get_valid_actions(self.app.board, self.app.cur_player)
 
-        for r in range(self.app.size):
-            for c in range(self.app.size):
+        for r in range(8):
+            for c in range(8):
                 if self.app.board[r,c] == 1:
                     if self.winner == -1 or self.winner == 0:
                         self.draw_black(painter, (r, c), 0.6)
@@ -148,7 +147,7 @@ class OthelloWidget(QtWidgets.QWidget):
                     else:
                         self.draw_white(painter, (r, c), 1)
 
-                if valid_actions[r * self.app.size + c]:
+                if valid_actions[r * 8 + c]:
                     if self.app.cur_player == 1:
                         self.draw_black(painter, (r, c), 0.2)
                     elif self.app.cur_player == -1:
@@ -157,7 +156,7 @@ class OthelloWidget(QtWidgets.QWidget):
     def draw_black(self, painter: QtGui.QPainter, intersection: Tuple[int, int], opacity: float) -> None:
         painter.setBrush(QtGui.QBrush(QtGui.QColor(40, 40, 40)))
         painter.setOpacity(opacity)
-        gap = self.frameGeometry().width() / self.app.size
+        gap = self.frameGeometry().width() / 8
         x = 8.5 + intersection[1] * gap
         y = 8.5 + intersection[0] * gap
         painter.drawEllipse(x, y, gap*0.75, gap*0.75)
@@ -165,7 +164,7 @@ class OthelloWidget(QtWidgets.QWidget):
     def draw_white(self, painter: QtGui.QPainter, intersection: Tuple[int, int], opacity: float) -> None:
         painter.setBrush(QtGui.QBrush(QtGui.QColor(215, 215, 215))) 
         painter.setOpacity(opacity)
-        gap = self.frameGeometry().width() / self.app.size
+        gap = self.frameGeometry().width() / 8
         x = 8.5 + intersection[1] * gap
         y = 8.5 + intersection[0] * gap
         painter.drawEllipse(x, y, gap*0.75, gap*0.75)
@@ -173,5 +172,5 @@ class OthelloWidget(QtWidgets.QWidget):
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         x = int(event.x() / 65)
         y = int(event.y() / 65)
-        action = y*self.app.size + x
+        action = y*8 + x
         self.app.player_step(action)

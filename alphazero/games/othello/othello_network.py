@@ -16,7 +16,7 @@ class OthelloNetwork(Network):
         
     def __call__(self, board: np.ndarray) -> Tuple[np.ndarray, float]:
         self.model.eval()
-        b = board.reshape(1, 1, self.args.othello_size, self.args.othello_size)
+        b = board.reshape(1, 1, 8, 8)
         b = torch.FloatTensor(b).to(self.device)
 
         with torch.no_grad():

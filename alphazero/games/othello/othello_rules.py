@@ -4,8 +4,8 @@ from typing import List, Tuple
 from alphazero.rules import Rules
 
 class OthelloRules(Rules):
-    def __init__(self, size: int):
-        self.size = size
+    def __init__(self):
+        pass
 
     def step(self, board: np.ndarray, action: int, player: int) -> np.ndarray:
         valid_actions = self.get_valid_actions(board, player)
@@ -13,8 +13,8 @@ class OthelloRules(Rules):
             return board.copy()
 
         assert valid_actions[action]
-        r = int(action / self.size)
-        c = action % self.size
+        r = int(action / 8)
+        c = action % 8
         next_board = board.copy()
         next_board[r,c] = player
         self.flips(next_board, player, r, c)
@@ -25,7 +25,7 @@ class OthelloRules(Rules):
             cur_r, cur_c = r + direction[0], c + direction[1]
             row = [(r, c)]
 
-            while cur_r >= 0 and cur_r < self.size and cur_c >= 0 and cur_c < self.size:
+            while cur_r >= 0 and cur_r < 8 and cur_c >= 0 and cur_c < 8:
                 row.append((cur_r, cur_c))
                 if board[cur_r,cur_c] != -player:
                     break
@@ -40,17 +40,17 @@ class OthelloRules(Rules):
                 board[r_,c_] = player
                 
     def get_action_space(self) -> int:
-        return self.size ** 2
+        return 64 
 
     def get_valid_actions(self, board: np.ndarray, player: int) -> List[int]:
         valid_actions = [0] * self.get_action_space()
         valids = set()
         
         for a in range(self.get_action_space()):
-            r, c = int(a / self.size), a % self.size
+            r, c = int(a / 8), a % 8 
             if board[r,c] == player:
                 moves = self.get_valids(board, player, r, c)
-                valids.update([pos[0] * self.size + pos[1] for pos in moves])
+                valids.update([pos[0] * 8 + pos[1] for pos in moves])
 
         for a in valids:
             valid_actions[a] = 1
@@ -63,7 +63,7 @@ class OthelloRules(Rules):
             cur_r, cur_c = r + direction[0], c + direction[1]
             row = [board[r,c]]
 
-            while cur_r >= 0 and cur_r < self.size and cur_c >= 0 and cur_c < self.size:
+            while cur_r >= 0 and cur_r < 8 and cur_c >= 0 and cur_c < 8:
                 row.append(board[cur_r,cur_c])
                 if row[-1] != -player:
                     break
@@ -81,9 +81,9 @@ class OthelloRules(Rules):
         return moves
 
     def get_start_board(self) -> np.ndarray:
-        board = np.zeros((self.size, self.size))
-        board[(self.size // 2) - 1,(self.size // 2) - 1] = board[(self.size // 2),(self.size // 2)] = -1
-        board[(self.size // 2) - 1,(self.size // 2)] = board[(self.size // 2),(self.size // 2) - 1] = 1
+        board = np.zeros((8, 8))
+        board[(8 // 2) - 1,(8 // 2) - 1] = board[(8 // 2),(8 // 2)] = -1
+        board[(8 // 2) - 1,(8 // 2)] = board[(8 // 2),(8 // 2) - 1] = 1
         return board
 
     def flip(self, board: np.ndarray) -> np.ndarray:

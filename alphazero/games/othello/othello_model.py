@@ -41,11 +41,11 @@ class OthelloModel(torch.nn.Module):
         
         # policy
         self.pi_conv_bn = self.conv_bn(256, 2, kernel_size=1, stride=1)
-        self.pi = torch.nn.Linear(2 * self.args.othello_size ** 2, self.args.othello_size ** 2)
+        self.pi = torch.nn.Linear(128, 64)
 
         # value
         self.v_conv_bn = self.conv_bn(256, 1, kernel_size=1, stride=1)
-        self.v_fc = torch.nn.Linear(self.args.othello_size ** 2, 256)
+        self.v_fc = torch.nn.Linear(64, 256)
         self.v = torch.nn.Linear(256, 1)
 
     def conv_bn(self, in_channels: int, out_channels: int, *args, **kwargs) -> torch.nn.Sequential:
@@ -55,7 +55,7 @@ class OthelloModel(torch.nn.Module):
         )
         
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        x = x.reshape(x.shape[0], 1, self.args.othello_size, self.args.othello_size)
+        x = x.reshape(x.shape[0], 1, 8, 8)
         r = self.conv_block(x)
         r = self.residual_tower(r)
 

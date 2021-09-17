@@ -33,8 +33,6 @@ if __name__ == "__main__":
     # Create the game rules object
     if args.game == "Gomoku":
         rules = Rules(args.gomoku_size)
-    elif args.game == "Othello":
-        rules = Rules(args.othello_size)
     else:
         rules = Rules()
 

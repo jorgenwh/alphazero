@@ -20,18 +20,18 @@ args = Arguments({
     "cpuct"                 : 1.0,          
 
     # Number of leaf-position rollouts for each move.
-    "monte_carlo_sims"      : 240,           
+    "monte_carlo_sims"      : 160,           
     
     # Number of residual blocks in the network.
     # This must match the number of residual blocks in any network being loaded
     # from the models/ directory as they are being loaded.
-    "residual_blocks"       : 10,            
+    "residual_blocks"       : 14,            
     
     # Network learning rate.
     "learning_rate"         : 0.001,        
 
     # Number of epochs to train the neural network per iteration.
-    "epochs"                : 10,           
+    "epochs"                : 12,           
 
     # Batch size used when updating the neural network.
     "batch_size"            : 128,          
@@ -46,14 +46,11 @@ args = Arguments({
     "play"                  : None,         
     
     # The name of a model you want the training to start from.
-    "model"                 : "connect4-10block",         
+    "model"                 : "othello-14block",         
 
     # 'Connect 4', 'TicTacToe', 'Gomoku', 'Othello'
-    "game"                  : "Connect 4",   
+    "game"                  : "Othello",   
 
     # Size of the gomoku board.
     "gomoku_size"           : 13,                
-
-    # Size of the othello board.
-    "othello_size"          : 10             
 })
