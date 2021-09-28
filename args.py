@@ -43,10 +43,10 @@ args = Arguments({
     # models/ directory.
     # The 'residual_blocks' setting must match the number of residual blocks in
     # the network used for the match.
-    "play"                  : None,         
+    "play"                  : "othello-14block",         
     
     # The name of a model you want the training to start from.
-    "model"                 : "othello-14block",         
+    "model"                 : None,         
 
     # 'Connect 4', 'TicTacToe', 'Gomoku', 'Othello'
     "game"                  : "Othello",   

@@ -44,6 +44,13 @@ class TicTacToeGui(QtWidgets.QMainWindow):
             perspective = self.board if self.cur_player == 1 else self.rules.flip(self.board)
             pi = self.mcts.get_policy(perspective, temperature=0)
             action = np.argmax(pi)
+
+            perceived_value = self.mcts.Q[(self.rules.to_string(perspective), action)]
+            if not isinstance(perceived_value, float):
+                perceived_value = perceived_value[0]
+            perceived_value = perceived_value if self.network_turn == 1 else -perceived_value
+            self.print_perception(perceived_value)
+
             self.board = self.rules.step(self.board, action, self.cur_player)
             self.cur_player *= -1
             self.tictactoe_widget.draw()
@@ -60,6 +67,31 @@ class TicTacToeGui(QtWidgets.QMainWindow):
                 self.board = self.rules.step(self.board, action, self.cur_player)
                 self.cur_player *= -1
                 self.tictactoe_widget.draw()
+
+    def print_perception(self, perceived_value: float) -> None:
+        perceived_str = str(round(perceived_value, 4))
+        lp1w = str(round(max(perceived_value, 0) * 100, 1))
+        lp2w = str(round(max(-perceived_value, 0) * 100, 1))
+        ld = str(round((1.0 - abs(perceived_value)) * 100, 1))
+
+        perceived_str = " " + perceived_str if len(perceived_str) == 6 else perceived_str
+        perceived_str += " " * (7 - len(perceived_str))
+        lp1w += " " * (6 - len(lp1w))
+        lp2w += " " * (6 - len(lp2w))
+        ld += " " * (6 - len(ld))
+
+        p1 = "AlphaZero" if self.network_turn == 1 else "Human    "
+        p2 = "AlphaZero" if self.network_turn == -1 else "Human    "
+
+        print(f"| ----------------------------------- |")
+        print(f"| AlphaZero perceived value : {perceived_str} |")
+        print(f"|                                     |")
+        print(f"|   AlphaZero perceived likelihoods   |")
+        print(f"| {p1}  (black) win    : {lp1w}% |")
+        print(f"| {p2}  (white) win    : {lp2w}% |")
+        print(f"| Draw                      : {ld}% |")
+        print(f"| ----------------------------------- |\n")
+
 
 class TicTacToeWidget(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget, app: TicTacToeGui):
