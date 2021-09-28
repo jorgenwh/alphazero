@@ -59,7 +59,10 @@ def load_model(network, folder, name):
     if not os.path.isfile(os.path.join(folder, name)):
         raise FileNotFoundError(f"Cannot find model '{os.path.join(folder, name)}'")
 
-    network.model.load_state_dict(torch.load(os.path.join(folder, name)))
+    if torch.cuda.is_available():
+        network.model.load_state_dict(torch.load(os.path.join(folder, name)))
+    else:
+        network.model.load_state_dict(torch.load(os.path.join(folder, name), map_location=torch.device("cpu")))
 
 def get_time_stamp(s):
     t_s = str(datetime.timedelta(seconds=round(s)))
