@@ -5,10 +5,10 @@ args = Arguments({
     "iterations"            : 500,           
 
     # How many self-play games to play per iteration.
-    "episodes"              : 150,          
+    "episodes"              : 125,          
 
     # How many training examples to store in memory at a time.
-    "replay_memory"         : 200_000,      
+    "replay_memory"         : 50_000,      
 
     # How many evaluation matches between the new and previous neural network checkpoints.
     "eval_matches"          : 50,           
@@ -20,7 +20,7 @@ args = Arguments({
     "cpuct"                 : 1.0,          
 
     # Number of leaf-position rollouts for each move.
-    "monte_carlo_sims"      : 160,           
+    "monte_carlo_sims"      : 20,           
     
     # Number of residual blocks in the network.
     # This must match the number of residual blocks in any network being loaded
@@ -43,10 +43,10 @@ args = Arguments({
     # models/ directory.
     # The 'residual_blocks' setting must match the number of residual blocks in
     # the network used for the match.
-    "play"                  : "othello-14block",         
+    "play"                  : None,         
     
     # The name of a model you want the training to start from.
-    "model"                 : None,         
+    "model"                 : "othello-14block",         
 
     # 'Connect 4', 'TicTacToe', 'Gomoku', 'Othello'
     "game"                  : "Othello",   

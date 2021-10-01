@@ -5,7 +5,7 @@ from typing import List, Tuple
 from .tictactoe_rules import TicTacToeRules
 from .tictactoe_network import TicTacToeNetwork
 from alphazero.mcts import MCTS
-from alphazero.misc import Arguments
+from alphazero.misc import Arguments, PrintColors
 
 class TicTacToeGui(QtWidgets.QMainWindow):
     def __init__(self, rules: TicTacToeRules, network: TicTacToeNetwork, args: Arguments):
@@ -20,6 +20,7 @@ class TicTacToeGui(QtWidgets.QMainWindow):
         # Which player is the network currently playing as {1, -1}
         self.network_turn = -1
 
+        self.move = 1
         self.cur_player = 1
         self.board = self.rules.get_start_board()
 
@@ -62,6 +63,7 @@ class TicTacToeGui(QtWidgets.QMainWindow):
             self.network_turn *= -1
             self.mcts = MCTS(self.rules, self.network, self.args)
             self.tictactoe_widget.draw()
+            self.move = 1
         else:
             if self.rules.get_valid_actions(self.board, self.cur_player)[action] and not self.rules.is_concluded(self.board):
                 self.board = self.rules.step(self.board, action, self.cur_player)
@@ -83,15 +85,32 @@ class TicTacToeGui(QtWidgets.QMainWindow):
         p1 = "AlphaZero" if self.network_turn == 1 else "Human    "
         p2 = "AlphaZero" if self.network_turn == -1 else "Human    "
 
-        print(f"| ----------------------------------- |")
-        print(f"| AlphaZero perceived value : {perceived_str} |")
-        print(f"|                                     |")
-        print(f"|   AlphaZero perceived likelihoods   |")
-        print(f"| {p1}  (black) win    : {lp1w}% |")
-        print(f"| {p2}  (white) win    : {lp2w}% |")
-        print(f"| Draw                      : {ld}% |")
-        print(f"| ----------------------------------- |\n")
+        if (self.network_turn == 1 and perceived_value > 0) or (self.network_turn == -1 and perceived_value < 0):
+            v_color = PrintColors.red
+        else:
+            v_color = PrintColors.green
 
+        p1_color = PrintColors.green if self.network_turn == -1 else PrintColors.red
+        p2_color = PrintColors.green if self.network_turn == 1 else PrintColors.red
+
+        evaluation_message = "AlphaZero is "
+        if v_color == PrintColors.green:
+            evaluation_message += "behind"
+        else:
+            evaluation_message = " " + evaluation_message + "ahead"
+
+        print(f"{PrintColors.transparent}| ----------------------------------- |{PrintColors.endc}")
+        print(f"{PrintColors.transparent}|{PrintColors.endc} Move {self.move}                              {PrintColors.transparent}|{PrintColors.endc}")
+        print(f"{PrintColors.transparent}|{PrintColors.endc} AlphaZero perceived value : {v_color}{PrintColors.bold}{perceived_str}{PrintColors.endc} {PrintColors.transparent}|{PrintColors.endc}")
+        print(f"{PrintColors.transparent}|{PrintColors.endc}                 {PrintColors.transparent}{evaluation_message} |{PrintColors.endc}")
+        print(f"{PrintColors.transparent}|{PrintColors.endc}                                     {PrintColors.transparent}|{PrintColors.endc}")
+        print(f"{PrintColors.transparent}|{PrintColors.endc}   AlphaZero perceived likelihoods   {PrintColors.transparent}|{PrintColors.endc}")
+        print(f"{PrintColors.transparent}|{PrintColors.endc} {p1} (X)         win : {p1_color}{PrintColors.bold}{lp1w}{PrintColors.endc}% {PrintColors.transparent}|{PrintColors.endc}")
+        print(f"{PrintColors.transparent}|{PrintColors.endc} {p2} (O)         win : {p2_color}{PrintColors.bold}{lp2w}{PrintColors.endc}% {PrintColors.transparent}|{PrintColors.endc}")
+        print(f"{PrintColors.transparent}|{PrintColors.endc}                      Draw : {PrintColors.bold}{ld}{PrintColors.endc}% {PrintColors.transparent}|{PrintColors.endc}")
+        print(f"{PrintColors.transparent}| ----------------------------------- |{PrintColors.endc}\n")
+
+        self.move += 1
 
 class TicTacToeWidget(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget, app: TicTacToeGui):

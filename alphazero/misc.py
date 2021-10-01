@@ -69,6 +69,15 @@ def get_time_stamp(s):
     ts = t_s.split(':')
     return '(' + ts[0] + 'h ' + ts[1] + 'm ' + ts[2] + 's)'
 
+class PrintColors():
+    red = "\33[91m"
+    green = "\33[92m"
+    yellow = "\33[93m"
+    blue = "\33[94m"
+    bold = "\33[1m"
+    transparent = "\33[90m"
+    endc = "\33[0m"
+
 class Arguments(dict):
     def __getattr__(self, attr):
         return self[attr]

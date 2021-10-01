@@ -4,14 +4,13 @@ from PyQt5 import QtWidgets
 
 from alphazero.manager import Manager 
 from alphazero.network import Network
-from alphazero.mcts import MCTS
-from alphazero.misc import Arguments, load_model
+from alphazero.misc import PrintColors, load_model
 
 from args import args
 
 if __name__ == "__main__":
     game_set = ("Connect 4", "TicTacToe", "Gomoku", "Othello")
-    print(f"Selected game: {args.game}")
+    print(f"Selected game: {PrintColors.bold}{args.game}{PrintColors.endc}\n")
     if args.game == "Connect 4":
         from alphazero.games.connect4.connect4_rules import Connect4Rules as Rules
         from alphazero.games.connect4.connect4_network import Connect4Network as Network
@@ -39,16 +38,16 @@ if __name__ == "__main__":
         rules = Rules()
 
     # Create network
-    print("Creating neural network")
+    print("Creating neural network\n")
     network = Network(args)
     
     # If we are playing against a model
     if args.play:
-        print(f"Loading model: '{args.play}'")
+        print(f"Loading model: '{PrintColors.bold}{args.play}{PrintColors.endc}'")
         load_model(network, "models", args.play)
-        print("Model loaded successfully")
+        print(f"{PrintColors.green}Model loaded successfully{PrintColors.endc}")
 
-        print("Starting game GUI")
+        print("\nStarting game GUI\n")
         app = QtWidgets.QApplication(sys.argv)
         gui = Gui(rules, network, args)
         sys.exit(app.exec_())
@@ -57,13 +56,13 @@ if __name__ == "__main__":
     else:
         # If we are starting with a given model
         if args.model:
-            print(f"Loading model: '{args.model}'")
+            print(f"Loading model: '{PrintColors.bold}{args.model}{PrintColors.endc}'")
             if not os.path.isfile(os.path.join("models", args.model)):
-                print(f"Error: cannot find model 'models/{args.model}'.\nStarting training with a newly initialized model.")
+                print(f"{PrintColors.red}Error: cannot find model 'models/{args.model}'.{PrintColors.endc}\nStarting training with a newly initialized model.")
             else:
                 load_model(network, "models", args.model)
-            print("Model loaded successfully")
+            print(f"{PrintColors.green}Model loaded successfully{PrintColors.endc}\n")
 
-        print("Creating manager object and starting training")
+        print("Creating manager object and starting training\n")
         manager = Manager(rules, network, args)
         manager.train()
