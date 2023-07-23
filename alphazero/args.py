@@ -5,9 +5,9 @@ CUDA: bool = True
 
 # algorithm
 #ITERATIONS: int = 10 # USE THIS
-ITERATIONS: int = 4
+ITERATIONS: int = 10
 #EPISODES: int = 100 # USE THIS
-EPISODES: int = 40
+EPISODES: int = 100
 REPLAY_MEMORY_SIZE: int = 50000
 EVALUATION_MATCHES: int = 40
 ACCEPTANCE_THRESHOLD: float = 0.55
@@ -21,6 +21,3 @@ MONTE_CARLO_LEAF_ROLLOUTS: int = 40
 BATCH_SIZE: int = 64
 LEARNING_RATE: float = 0.001
 EPOCHS: int = 10
-
-# other
-GAME: str = "TicTacToe"

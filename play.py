@@ -5,17 +5,17 @@ from PyQt5 import QtWidgets
 
 # import whatever game you want to play 
 # {Connect4, TicTacToe, Othello, Gomoku}
-from alphazero import TicTacToeNetwork as Network
-from alphazero import TicTacToeRules as Rules
-from alphazero import TicTacToeGUI as GUI
+from alphazero import Connect4Network as Network
+from alphazero import Connect4Rules as Rules
+from alphazero import Connect4GUI as GUI
 
 if __name__ == "__main__":
     network = Network()
     rules = Rules()
 
     # load a pre-trained network
-    #name = None
-    name = "training/tictactoe/model_checkpoint_160games.pt"
+    name = None
+    #name = "training/tictactoe/model_checkpoint_160games.pt"
 
     if name is not None:
         print(f"loading pre-trained network: {name}")

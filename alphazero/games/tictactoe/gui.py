@@ -35,7 +35,6 @@ class TicTacToeGUI(QtWidgets.QMainWindow):
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
         self.setGeometry(750, 280, 350, 350)
-
         self.tictactoe_widget = TicTacToeWidget(self.centralWidget, self)
         self.tictactoe_widget.setGeometry(40, 40, 270, 270)
 
@@ -130,8 +129,6 @@ class TicTacToeWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self.app = app
 
-        # list to contain the 3 slots making up the winning sequence.
-        # this is used to color the winning sequence differently when the game is concluded
         self.winner_row = []
         self.show()
 
@@ -165,7 +162,7 @@ class TicTacToeWidget(QtWidgets.QWidget):
         for r in range(3):
             for c in range(3):
                 if self.winner_row:
-                    if (r, c) in self.winner_row:# or np.sum(self.app.state[:,r,c]) == 0:
+                    if (r, c) in self.winner_row:
                         painter.setOpacity(1)
                     else:
                         painter.setOpacity(0.5)

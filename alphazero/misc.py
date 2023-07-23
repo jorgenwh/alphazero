@@ -3,7 +3,7 @@ import torch
 import datetime
 
 from .network import Network
-from .args import GAME, RESIDUAL_BLOCKS
+from .args import RESIDUAL_BLOCKS
 
 def save_checkpoint(dir_name: str, network: Network, games_played: int) -> None:
     filename = f"{dir_name}/model_checkpoint_{games_played}games.pt"
@@ -28,7 +28,7 @@ def setup_training_session() -> str:
     os.mkdir(dir_name)
 
     f = open(dir_name + "config", "w")
-    f.write("GAME=" + str(GAME) + "\nRESIDUAL_BLOCKS=" + str(RESIDUAL_BLOCKS))
+    f.write("RESIDUAL_BLOCKS=" + str(RESIDUAL_BLOCKS))
     f.close()
 
     return dir_name
