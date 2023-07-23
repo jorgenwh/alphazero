@@ -1,40 +1,37 @@
 import numpy as np
 from tqdm import tqdm
-from typing import List, Tuple
+from collections import deque
 
-from alphazero.rules import Rules
-from alphazero.network import Network
-from alphazero.mcts import MCTS
-from alphazero.misc import Arguments
+from .rules import Rules
+from .network import Network
+from .mcts import MCTS
+from .args import EPISODES, SELFPLAY_TEMPERATURE
 
-def play_episode(mcts: MCTS, rules: Rules, args: Arguments) -> List[Tuple[np.ndarray, np.ndarray, float]]:
-    sequence = []
-    board = rules.get_start_board()
+def selfplay(rules: Rules, network: Network, replay_memory: deque) -> None:
+    for i in tqdm(
+            range(EPISODES), 
+            desc="self-play", 
+            bar_format="{l_bar}{bar}| game: {n_fmt}/{total_fmt} - elapsed: {elapsed}"
+    ):
+        mcts = MCTS(rules, network)
+        play_episode(rules, mcts, replay_memory)
+    return EPISODES
+
+def play_episode(rules: Rules, mcts: MCTS, replay_memory: deque) -> None:
+    state = rules.get_start_state() 
+    sequence = deque()
     cur_player = 1
-    ply = 0
+    winner = None
 
-    while not rules.is_concluded(board):
-        perspective = board if cur_player == 1 else rules.flip(board)
-        pi = mcts.get_policy(perspective, args.temperature)
-
-        sequence.append((perspective, pi, cur_player))
-
+    while winner is None:
+        observartion = state if cur_player == 1 else rules.flip_view(state)
+        pi = mcts.get_policy(observartion, SELFPLAY_TEMPERATURE)
+        sequence.append((observartion, pi, cur_player))
         action = np.random.choice(rules.get_action_space(), p=pi)
-        board = rules.step(board, action, cur_player)
+        state = rules.step(state, action, cur_player)
+        winner = rules.get_winner(state)
         cur_player *= -1
 
-    value = rules.get_result(board)
-    for i, (board, pi, player) in enumerate(sequence):
-        v = (1 if player == value else -1) if value else 0
-        sequence[i] = (board, pi, v)
-
-    return sequence
-
-def selfplay(rules: Rules, network: Network, args: Arguments) -> List[Tuple[np.ndarray, np.ndarray, float]]:
-    training_examples = []
-    
-    for iter in tqdm(range(args.episodes), desc="Self-Play", bar_format="{l_bar}{bar}| Game: {n_fmt}/{total_fmt} - Elapsed: {elapsed}"):
-        mcts = MCTS(rules, network, args)
-        training_examples.extend(play_episode(mcts, rules, args))
-
-    return training_examples
+    for i, (observation, pi, player) in enumerate(sequence):
+        v = (1 if player == winner else -1) if winner else 0
+        replay_memory.append((observation, pi, v))

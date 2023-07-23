@@ -1,111 +1,101 @@
 import numpy as np
 from collections import defaultdict
-from typing import List
+from typing import Union
 
-from alphazero.rules import Rules
-from alphazero.network import Network
-from alphazero.misc import Arguments
+from .rules import Rules
+from .network import Network
+from .args import MONTE_CARLO_LEAF_ROLLOUTS, CPUCT
 
-class MCTS():
-    """
-    Monte-Carlo Tree Search class containing the search tree.
-    """
-    def __init__(self, rules: Rules, network: Network, args: Arguments):
+class MCTS:
+    def __init__(self, rules: Rules, network: Network):
         self.rules = rules
         self.network = network
-        self.args = args
 
-        self.N = defaultdict(float)
-        self.W = defaultdict(float)
-        self.Q = defaultdict(float)
-        self.P = defaultdict(float)
+        self.N = defaultdict(float) # Number of times a state-action pair has been visited
+        self.W = defaultdict(float) # Total value of a state-action pair
+        self.Q = defaultdict(float) # Average value of a state-action pair
+        self.P = defaultdict(float) # Prior probability of taking an action in a state
 
-    def get_policy(self, board: np.ndarray, temperature: float) -> List[int]:
-        for _ in range(self.args.monte_carlo_sims):
-            self.search(board)
+    def get_policy(self, 
+            state: Union[np.ndarray, tuple[np.ndarray, ...]], 
+            temperature: int
+    ) -> np.ndarray:
+        for _ in range(MONTE_CARLO_LEAF_ROLLOUTS):
+            self.leaf_rollout(state)
 
-        s = self.rules.to_string(board)
-        raw_policy = [self.N[(s, a)] for a in range(self.rules.get_action_space())]
+        state_hash = self.rules.hash(state)
+        raw_pi = [self.N[(state_hash, action)] for action in range(self.rules.get_action_space())]
 
-        # If temperature = 0, we choose the move deterministically (for competitive play)
+        # if temperature = 0, we choose the action deterministically for competitive play
         if temperature > 0:
-            pi = [N ** (1 / temperature) for N in raw_policy]
+            pi = [N ** (1.0 / temperature) for N in raw_pi]
             if sum(pi) == 0:
-                pi = [1 for _ in range(len(pi))]
+                pi = [1.0 for _ in range(len(pi))]
             pi = [N / sum(pi) for N in pi]
         else:
-            actions = [i for i in range(len(raw_policy)) if raw_policy[i] == max(raw_policy)]
-            pi = [0] * len(raw_policy)
-            pi[np.random.choice(actions)] = 1
+            max_action = max(raw_pi)
+            pi = [0] * len(self.rules.get_action_space())
+            for action in self.rules.get_action_space():
+                if raw_pi[action] == max_action:
+                    pi[action] = 1
+                    break
 
         return pi
 
-    def search(self, board: np.ndarray) -> float:
-        """
-        A single search step. 
-        This is called recursively until we reach a new leaf node or until we reach a terminal position.
+    def leaf_rollout(self, state: Union[np.ndarray, tuple[np.ndarray, ...]]) -> float:
+        # if the search has reached a terminal state, it returns the value according to
+        # the game's rules
+        winner = self.rules.get_winner(state)
+        if winner is not None:
+            return -winner
 
-        Args:
-            board (np.ndarray): the current board position.
-        Returns:
-            (float): the negated found value from the search, either evaluated by the neural network
-                or concluded by the game rules.
-        """
-        # If the search has reached a terminal game position, it retuns the position's value determined by the
-        # game rules
-        if self.rules.is_concluded(board):
-            value = self.rules.get_result(board)
-            return -value
+        state_hash = self.rules.hash(state)
+        valid_actions = self.rules.get_valid_actions(state, 1)
 
-        s = self.rules.to_string(board)
-        valid_actions = self.rules.get_valid_actions(board, 1)
+        # if a leaf node is reached, we evaluate using the network
+        if state_hash not in self.P:
+            pi, v = self.network(state)
 
-        # We evaluate the position using the network if we have reached a leaf node.
-        # To avoid forwarding equal positions through the network several times, we store the value assigned
-        # by the network for future use
-        if s not in self.P:
-            pi, value = self.network(board)
-
-            # Mask the invalid actions from the action probability tensor before
-            # renormalizing the output probabilities.
+            # mask invalid actions from the action probabilities and renormalize
             pi = pi * valid_actions
             pi = pi / max(np.sum(pi), 1e-8)
 
-            self.P[s] = pi
-            return -value
+            self.P[state_hash] = pi
+            return -v
 
-        # Here we select the action used to continue the search.
-        # The action chosen is whatever action maximizes Q(s, a) + U(s, a) in accordance with DeepMind's
-        # AlphaGo Zero paper.
-        # 
+        # we select the action used to continue the search by choosing the action that 
+        # maximizes Q(s, a) + U(s, a) in accordance with DeepMind's AlphaGo Zero paper:
+        #
         #   a(t) = argmax(Q(s, a) + U(s, a)), where
         #   U(s, a) = cpuct * P(s, a) * (sprt(N(s)) / (1 + N(s, a)))
         #
-        # 'cpuct' is a constant determining the level of exploration. A small cpuct value will give more weight to
-        # the action Q-value as opposed to the network's output probabilities and the amount of times the action
-        # has been explored.
+        # 'cpuct' is a constant determining the level of exploration - a small 
+        # cpuct value will give more weight to the action Q-value as opposed to the network's 
+        # output probabilities and the amount of times the action has been explored
 
-        qu, action = -np.inf, None
-        for a in range(self.rules.get_action_space()):
-            # Only compute the QU value for valid actions
-            if valid_actions[a]:
-                q = self.Q[(s, a)]
-                u = self.args.cpuct * self.P[s][a] * np.sqrt(sum([self.N[(s, a_)] for a_ in range(self.rules.get_action_space())])) / (1 + self.N[(s, a)])
-                qu_a = q + u 
+        qu, selected_action = -np.inf, None
+        for action in range(self.rules.get_action_space()):
+            if valid_actions[action] == 0:
+                continue
 
-                if qu_a > qu:
-                    qu = qu_a
-                    action = a
+            q = self.Q[(state_hash, action)]
+            u = CPUCT * self.P[state_hash][action] * np.sqrt(sum([self.N[(state_hash, a)] for a in range(self.rules.get_action_space())])) / (1.0 + self.N[(state_hash, action)])
+            qu_a = q + u
 
-        # Simulate the action and get the next positional node
-        next_board = self.rules.step(board, action, 1)
-        next_board = self.rules.flip(next_board)
+            if qu_a > qu:
+                qu = qu_a
+                selected_action = action
 
-        # Get the value from the continued search
-        value = self.search(next_board)
-        
-        self.N[(s, action)] += 1
-        self.W[(s, action)] += value
-        self.Q[(s, action)] = self.W[(s, action)] / self.N[(s, action)]
+        # simulate the action and get the next positional node
+        next_state = self.rules.step(state, selected_action, 1)
+        next_state = self.rules.flip_view(next_state)
 
-        return -value    
+        # continue search
+        v = self.leaf_rollout(next_state)
+
+        self.N[(state_hash, selected_action)] += 1
+        self.W[(state_hash, selected_action)] += v
+        self.Q[(state_hash, selected_action)] = self.W[(state_hash, selected_action)] / self.N[(state_hash, selected_action)]
+
+        return -v
+

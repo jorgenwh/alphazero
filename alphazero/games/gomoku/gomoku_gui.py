@@ -75,6 +75,13 @@ class GomokuGui(QtWidgets.QMainWindow):
                 self.cur_player *= -1
                 self.gomoku_widget.draw()
 
+    def keyPressEvent(self, event):
+        key_press = event.key()
+
+        if key_press == 16777216:
+            self.timer.stop()
+            exit()
+
     def print_perception(self, perceived_value: float) -> None:
         perceived_str = str(round(perceived_value, 4))
         lp1w = str(round(max(perceived_value, 0) * 100, 1))
@@ -104,8 +111,12 @@ class GomokuGui(QtWidgets.QMainWindow):
         else:
             evaluation_message = " " + evaluation_message + "ahead"
 
+        move_len = len(str(self.move))
+        move_suffix_space = "                           "
+        move_suffix_space += " " * (4 - move_len)
+
         print(f"{PrintColors.transparent}| ----------------------------------- |{PrintColors.endc}")
-        print(f"{PrintColors.transparent}|{PrintColors.endc} Move {self.move}                              {PrintColors.transparent}|{PrintColors.endc}")
+        print(f"{PrintColors.transparent}|{PrintColors.endc} Move {self.move}{move_suffix_space}{PrintColors.transparent}|{PrintColors.endc}")
         print(f"{PrintColors.transparent}|{PrintColors.endc} AlphaZero perceived value : {v_color}{PrintColors.bold}{perceived_str}{PrintColors.endc} {PrintColors.transparent}|{PrintColors.endc}")
         print(f"{PrintColors.transparent}|{PrintColors.endc}                 {PrintColors.transparent}{evaluation_message} |{PrintColors.endc}")
         print(f"{PrintColors.transparent}|{PrintColors.endc}                                     {PrintColors.transparent}|{PrintColors.endc}")

@@ -2,72 +2,42 @@ import os
 import torch
 import datetime
 
-def session_setup(rules, args):
-    """
-    Setup a session folder containing the model-checkpoints folder.
-    
-    Returns:
-        (int): the session number which is used to keep track of where to save the checkpoints
-            and other data.
-    """
-    if not os.path.isdir("sessions/"):
-        os.mkdir("sessions")
+from .network import Network
+from .args import GAME, RESIDUAL_BLOCKS
 
-    num = 0
-    while os.path.isdir("sessions/" + args.game + "_session_" + str(num)):
-        num += 1
+def save_checkpoint(dir_name: str, network: Network, games_played: int) -> None:
+    filename = f"{dir_name}/model_checkpoint_{games_played}games.pt"
+    if os.path.isfile(filename):
+        return
+    torch.save(network.model.state_dict(), filename)
 
-    os.mkdir("sessions/" + args.game + "_session_" + str(num))
-    os.mkdir("sessions/" + args.game + "_session_" + str(num) + "/model-checkpoints")
+def load_checkpoint(dir_name: str, network: Network, games_played: int) -> None:
+    filename = f"{dir_name}/model_checkpoint_{games_played}games.pt"
+    assert os.path.isfile(filename)
+    network.model.load_state_dict(torch.load(filename))
 
-    f = open("sessions/" + args.game + "_session_" + str(num) + "/info.txt", "w")
-    content = f"Session {num}\n\nGame: " + str(rules)
-    if hasattr(rules, "size"):
-        content += f" (size: {rules.size})"
-    content += f"\n\nStarted at: {datetime.datetime.now()}"[:-7] + f"\n\nResidual blocks: {args.residual_blocks}"
-    f.write(content)
 
-    return num
+def setup_training_session() -> str:
+    if not os.path.isdir("training"):
+        os.mkdir("training")
 
-def save_checkpoint(network, session_number, checkpoint_number, args):
-    folder = "sessions/" + args.game + "_session_" + str(session_number) + "/model-checkpoints/"
-    name = "network_checkpoint" + str(checkpoint_number)
+    inp = input("name this training session's directory: ")
+    while os.path.isdir("training/" + inp):
+        inp = input("directory already exists, please choose another name: ")
+    dir_name = "training/" + inp + "/"
+    os.mkdir(dir_name)
 
-    if os.path.isfile(os.path.join(folder, name)):
-        raise FileExistsError(f"Model '{os.path.join(folder, name)}' already exists!")
-    
-    torch.save(network.model.state_dict(), os.path.join(folder, name))
+    f = open(dir_name + "config", "w")
+    f.write("GAME=" + str(GAME) + "\nRESIDUAL_BLOCKS=" + str(RESIDUAL_BLOCKS))
+    f.close()
 
-def load_checkpoint(network, session_number, checkpoint_number, args):
-    folder = "sessions/" + args.game + "_session_" + str(session_number) + "/model-checkpoints/"
-    name = "network_checkpoint" + str(checkpoint_number)
-    assert os.path.isfile(os.path.join(folder, name))
-
-    network.model.load_state_dict(torch.load(os.path.join(folder, name)))
-
-def save_model(network, folder, name):
-    if not os.path.isdir(folder):
-        raise FileNotFoundError(f"Folder '{folder}' not found.")
-
-    n = 0
-    while os.path.isfile(folder + name + str(n)):
-        n += 1
-    
-    torch.save(network.model.state_dict(), os.path.join(folder, name + str(n)))
-
-def load_model(network, folder, name):
-    if not os.path.isfile(os.path.join(folder, name)):
-        raise FileNotFoundError(f"Cannot find model '{os.path.join(folder, name)}'")
-
-    if torch.cuda.is_available():
-        network.model.load_state_dict(torch.load(os.path.join(folder, name)))
-    else:
-        network.model.load_state_dict(torch.load(os.path.join(folder, name), map_location=torch.device("cpu")))
+    return dir_name
 
 def get_time_stamp(s):
     t_s = str(datetime.timedelta(seconds=round(s)))
     ts = t_s.split(':')
     return '(' + ts[0] + 'h ' + ts[1] + 'm ' + ts[2] + 's)'
+
 
 class PrintColors():
     red = "\33[91m"
@@ -78,9 +48,6 @@ class PrintColors():
     transparent = "\33[90m"
     endc = "\33[0m"
 
-class Arguments(dict):
-    def __getattr__(self, attr):
-        return self[attr]
 
 class AverageMeter(object):
     def __init__(self):

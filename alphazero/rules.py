@@ -1,39 +1,43 @@
 import numpy as np
-from typing import List
+from typing import Union
 
-class Rules():
-    """
-    Abstract game-rules class.
-    For any new game, inherit from this class and implement all of the below methods.
-    """
+class Rules:
     def __init__(self):
         pass
 
-    def step(self, board: np.ndarray, action: int, player: int) -> np.ndarray:
+    def get_start_state(self) -> Union[np.ndarray, tuple[np.ndarray, ...]]:
         raise NotImplementedError
 
     def get_action_space(self) -> int:
         raise NotImplementedError
 
-    def get_valid_actions(self, board: np.ndarray, player: int) -> List[int]:
+    def get_valid_actions(self, 
+            state: Union[np.ndarray, tuple[np.ndarray, ...]], 
+            player: int
+        ) -> np.ndarray:
         raise NotImplementedError
 
-    def get_start_board(self) -> np.ndarray:
+    def step(self, 
+            state: Union[np.ndarray, tuple[np.ndarray, ...]],
+            action: int,
+            player: int
+        ) -> Union[np.ndarray, tuple[np.ndarray, ...]]:
         raise NotImplementedError
 
-    def flip(self, board: np.ndarray) -> np.ndarray:
+
+    def flip_view(self, 
+            state: Union[np.ndarray, tuple[np.ndarray, ...]]
+        ) -> Union[np.ndarray, tuple[np.ndarray, ...]]:
         raise NotImplementedError
 
-    def to_string(self, board: np.ndarray) -> str:
+    def hash(self, 
+            state: Union[np.ndarray, tuple[np.ndarray, ...]]
+        ) -> int:
         raise NotImplementedError
 
-    def is_concluded(self, board: np.ndarray) -> bool:
-        raise NotImplementedError
-
-    def get_result(self, board: np.ndarray) -> float:
-        raise NotImplementedError
-
-    def has_won(self, board: np.ndarray, player: int) -> bool:
+    def get_winner(self, 
+            state: Union[np.ndarray, tuple[np.ndarray, ...]]
+        ) -> Union[int, None]:
         raise NotImplementedError
 
     def __str__(self) -> str:
