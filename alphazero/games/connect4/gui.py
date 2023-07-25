@@ -12,12 +12,9 @@ class Connect4GUI(QtWidgets.QMainWindow):
         super().__init__()
         self.rules = rules
         self.network = network
-
         self.mcts = MCTS(self.rules, self.network)
 
-        # is the network playing as player 1 or -1
         self.network_turn = -1
-
         self.move = 1
         self.cur_player = 1
         self.winner = None
@@ -105,7 +102,7 @@ class Connect4GUI(QtWidgets.QMainWindow):
         if v_color == PC.green:
             evaluation_message += "worse "
         else:
-            evaluation_message = " " + evaluation_message + "better"
+            evaluation_message = evaluation_message + "better"
 
         move_len = len(str(self.move))
         move_suffix_space = "                           "

@@ -3,6 +3,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
+from .rules import GOMOKU_BOARD_SIZE
 from ...network import Network
 from ...models import ResNet
 from ...misc import AverageMeter
@@ -15,7 +16,7 @@ def _MSEL(target: torch.Tensor, out: torch.Tensor, size: int) -> torch.Tensor:
     return torch.sum((target - out.reshape(-1)) ** 2) / size
 
 
-class Connect4Network(Network):
+class GomokuNetwork(Network):
     def __init__(self):
         super().__init__()
         if CUDA:
@@ -23,11 +24,15 @@ class Connect4Network(Network):
             self.device = torch.device("cuda:0")
         else:
             self.device = torch.device("cpu")
-        self.model = ResNet(in_height=6, in_width=7, in_channels=2, action_space=7).to(self.device)
+        self.model = ResNet(
+                in_height=GOMOKU_BOARD_SIZE, 
+                in_width=GOMOKU_BOARD_SIZE, 
+                in_channels=2, 
+                action_space=GOMOKU_BOARD_SIZE**2).to(self.device)
         self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=LEARNING_RATE)
 
     def __call__(self, observation: np.ndarray) -> tuple[np.ndarray, float]:
-        observation = observation.reshape(1, 2, 6, 7)
+        observation = observation.reshape(1, 2, GOMOKU_BOARD_SIZE, GOMOKU_BOARD_SIZE)
         observation = torch.FloatTensor(observation).to(self.device)
 
         self.model.eval()

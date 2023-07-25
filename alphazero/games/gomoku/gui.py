@@ -1,15 +1,20 @@
 import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from .rules import TicTacToeRules
-from .network import TicTacToeNetwork
+from .rules import GomokuRules, GOMOKU_BOARD_SIZE
+from .network import GomokuNetwork
 from ...mcts import MCTS
 from ...misc import PrintColors as PC
 from ...args import PLAY_TEMPERATURE
 
-class TicTacToeGUI(QtWidgets.QMainWindow):
-    def __init__(self, rules: TicTacToeRules, network: TicTacToeNetwork):
+class GomokuGUI(QtWidgets.QMainWindow):
+    def __init__(self, rules: GomokuRules, network: GomokuNetwork):
         super().__init__()
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QtGui.QColor(255, 212, 129))
+        self.setPalette(p)
+
         self.rules = rules
         self.network = network
         self.mcts = MCTS(self.rules, self.network)
@@ -28,12 +33,12 @@ class TicTacToeGUI(QtWidgets.QMainWindow):
         self.show()
 
     def init_window(self) -> None:
-        self.setFixedSize(350, 350)
+        self.setFixedSize(GOMOKU_BOARD_SIZE*40 + 75, GOMOKU_BOARD_SIZE*40 + 75)
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
-        self.setGeometry(750, 280, 350, 350)
-        self.tictactoe_widget = TicTacToeWidget(self.centralWidget, self)
-        self.tictactoe_widget.setGeometry(40, 40, 270, 270)
+        self.setGeometry(1500, 330, 350, 350)
+        self.gomoku_widget = GomokuWidget(self.centralWidget, self)
+        self.gomoku_widget.setGeometry(40, 40, GOMOKU_BOARD_SIZE*40, GOMOKU_BOARD_SIZE*40)
 
     def step(self) -> None:
         if self.cur_player == self.network_turn and self.winner is None:
@@ -50,7 +55,7 @@ class TicTacToeGUI(QtWidgets.QMainWindow):
             self.state = self.rules.step(self.state, action, self.cur_player)
             self.winner = self.rules.get_winner(self.state)
             self.cur_player *= -1
-            self.tictactoe_widget.draw()
+            self.gomoku_widget.draw()
 
     def player_step(self, action: int) -> None:
         if self.winner is not None:
@@ -60,13 +65,13 @@ class TicTacToeGUI(QtWidgets.QMainWindow):
             self.network_turn *= -1
             self.mcts = MCTS(self.rules, self.network)
             self.move = 1
-            self.tictactoe_widget.draw()
+            self.gomoku_widget.draw()
         else:
             if self.rules.get_valid_actions(self.state, self.cur_player)[action] and self.winner is None:
                 self.state = self.rules.step(self.state, action, self.cur_player)
                 self.winner = self.rules.get_winner(self.state)
                 self.cur_player *= -1
-                self.tictactoe_widget.draw()
+                self.gomoku_widget.draw()
 
     def keyPressEvent(self, event):
         key_press = event.key()
@@ -114,18 +119,17 @@ class TicTacToeGUI(QtWidgets.QMainWindow):
         print(f"{PC.transparent}|{PC.endc}                 {PC.transparent}{evaluation_message} |{PC.endc}")
         print(f"{PC.transparent}|{PC.endc}                                     {PC.transparent}|{PC.endc}")
         print(f"{PC.transparent}|{PC.endc}   AlphaZero perceived likelihoods   {PC.transparent}|{PC.endc}")
-        print(f"{PC.transparent}|{PC.endc} {p1} (X)         win : {p1_color}{PC.bold}{lp1w}{PC.endc}% {PC.transparent}|{PC.endc}")
-        print(f"{PC.transparent}|{PC.endc} {p2} (O)         win : {p2_color}{PC.bold}{lp2w}{PC.endc}% {PC.transparent}|{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc} {p1} ({PC.transparent}black{PC.endc})     win : {p1_color}{PC.bold}{lp1w}{PC.endc}% {PC.transparent}|{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc} {p2} (white)     win : {p2_color}{PC.bold}{lp2w}{PC.endc}% {PC.transparent}|{PC.endc}")
         print(f"{PC.transparent}|{PC.endc}                      Draw : {PC.bold}{ld}{PC.endc}% {PC.transparent}|{PC.endc}")
         print(f"{PC.transparent}| ----------------------------------- |{PC.endc}\n")
 
         self.move += 1
 
-class TicTacToeWidget(QtWidgets.QWidget):
-    def __init__(self, parent: QtWidgets.QWidget, app: TicTacToeGUI):
+class GomokuWidget(QtWidgets.QWidget):
+    def __init__(self, parent: QtWidgets.QWidget, app: GomokuGUI):
         super().__init__(parent)
         self.app = app
-
         self.winner_row = []
         self.show()
 
@@ -137,7 +141,7 @@ class TicTacToeWidget(QtWidgets.QWidget):
         painter.begin(self)
         self.winner_row = self.get_winner_row()
         self.draw_board(painter)
-        self.draw_signs(painter)
+        self.draw_stones(painter)
         painter.end()
 
     def draw_board(self, painter: QtGui.QPainter) -> None:
@@ -149,54 +153,67 @@ class TicTacToeWidget(QtWidgets.QWidget):
 
         right = self.frameGeometry().width()
         bottom = self.frameGeometry().height()
-        gap = right/3
-        
-        for i in range(2):
-            painter.drawLine(0, 90 + i*gap, right, 90 + i*gap)
-            painter.drawLine(90 + i*gap, 0, 90 + i*gap, bottom)
+        gap = right / GOMOKU_BOARD_SIZE
 
-    def draw_signs(self, painter: QtGui.QPainter) -> None:
-        for r in range(3):
-            for c in range(3):
+        for i in range(GOMOKU_BOARD_SIZE):
+            painter.drawLine(gap/2 + i*gap, 0, gap/2 + i*gap, right)
+            painter.drawLine(0, gap/2 + i*gap, bottom, gap/2 + i*gap)
+
+    def draw_stones(self, painter: QtGui.QPainter) -> None:
+        for r in range(GOMOKU_BOARD_SIZE):
+            for c in range(GOMOKU_BOARD_SIZE):
                 if self.winner_row:
-                    if (r, c) in self.winner_row:
-                        painter.setOpacity(1)
-                    else:
-                        painter.setOpacity(0.5)
+                    if self.app.state[0,r,c] == 1:
+                        self.draw_black(painter, (r, c), 1.0 if (r,c) in self.winner_row else 0.5)
+                    elif self.app.state[1,r,c] == 1:
+                        self.draw_white(painter, (r, c), 1.0 if (r,c) in self.winner_row else 0.5)
                 else:
-                    painter.setOpacity(1)
+                    if self.app.state[0,r,c] == 1:
+                        self.draw_black(painter, (r, c), 1.0)
+                    elif self.app.state[1,r,c] == 1:
+                        self.draw_white(painter, (r, c), 1.0)
 
-                if self.app.state[0,r,c] == 1:
-                    self.draw_cross(painter, (r, c))
-                elif self.app.state[1,r,c] == 1:
-                    self.draw_circle(painter, (r, c))
-
-    def draw_cross(self, painter: QtGui.QPainter, cell: tuple[int, int]) -> None:
-        gap = self.frameGeometry().width()/3
-        painter.drawLine(cell[1]*gap + gap/2 - 25, cell[0]*gap + gap/2 - 25, cell[1]*gap + gap/2 + 25, cell[0]*gap + gap/2 + 25)
-        painter.drawLine(cell[1]*gap + gap/2 - 25, cell[0]*gap + gap/2 + 25, cell[1]*gap + gap/2 + 25, cell[0]*gap + gap/2 - 25)
-
-    def draw_circle(self, painter: QtGui.QPainter, cell: tuple[int, int]) -> None:
-        gap = self.frameGeometry().width()/3
-        painter.drawEllipse(cell[1]*gap + 15, cell[0]*gap + 15, 60, 60)
+    def draw_black(self, painter: QtGui.QPainter, intersection: tuple[int, int], opacity: float) -> None:
+        painter.setBrush(QtGui.QBrush(QtGui.QColor(40, 40, 40)))
+        painter.setOpacity(opacity)
+        gap = self.frameGeometry().width() / GOMOKU_BOARD_SIZE
+        x = 5 + intersection[1] * gap
+        y = 5 + intersection[0] * gap
+        painter.drawEllipse(x, y, gap*0.75, gap*0.75)
+    
+    def draw_white(self, painter: QtGui.QPainter, intersection: tuple[int, int], opacity: float) -> None:
+        painter.setBrush(QtGui.QBrush(QtGui.QColor(215, 215, 215))) 
+        painter.setOpacity(opacity)
+        gap = self.frameGeometry().width() / GOMOKU_BOARD_SIZE
+        x = 5 + intersection[1] * gap
+        y = 5 + intersection[0] * gap
+        painter.drawEllipse(x, y, gap*0.75, gap*0.75)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        r = int(event.x() / 90)
-        c = int(event.y() / 90)
-        action = c*3 + r
+        x = int(event.x() / 40)
+        y = int(event.y() / 40)
+        action = y*GOMOKU_BOARD_SIZE + x
         self.app.player_step(action)
 
     def get_winner_row(self) -> list[tuple[int, int]]:
-        for j in range(2):
-            for i in range(3):
-                if self.app.state[j,i,0] == self.app.state[j,i,1] == self.app.state[j,i,2] != 0:
-                    return [(i,0), (i,1), (i,2)]
-                if self.app.state[j,0,i] == self.app.state[j,1,i] == self.app.state[j,2,i] != 0:
-                    return [(0,i), (1,i), (2,i)]
+        for c in range(GOMOKU_BOARD_SIZE):
+            for r in range(GOMOKU_BOARD_SIZE):
+                if c < GOMOKU_BOARD_SIZE - 4:
+                    if np.sum(self.app.state[0,r,c:c+5]) == 5 or np.sum(self.app.state[1,r,c:c+5]) == 5:
+                        return [(r, c), (r,c+1), (r,c+2), (r,c+3), (r,c+4)]
 
-            if self.app.state[j,0,0] == self.app.state[j,1,1] == self.app.state[j,2,2] != 0:
-                return [(0,0), (1,1), (2,2)]
-            if self.app.state[j,2,0] == self.app.state[j,1,1] == self.app.state[j,0,2] != 0:
-                return [(2,0), (1,1), (0,2)]
-        
+                if r < GOMOKU_BOARD_SIZE - 4:
+                    if np.sum(self.app.state[0,r:r+5,c]) == 5 or np.sum(self.app.state[1,r:r+5,c]) == 5:
+                        return [(r, c), (r+1,c), (r+2,c), (r+3,c), (r+4,c)]
+
+                if c < GOMOKU_BOARD_SIZE - 4 and r < GOMOKU_BOARD_SIZE - 4:
+                    if self.app.state[0,r,c] == self.app.state[0,r+1,c+1] == self.app.state[0,r+2,c+2] == self.app.state[0,r+3,c+3] == self.app.state[0,r+4,c+4] == 1:
+                        return [(r, c), (r+1,c+1), (r+2,c+2), (r+3,c+3), (r+4,c+4)]
+                    if self.app.state[1,r,c] == self.app.state[1,r+1,c+1] == self.app.state[1,r+2,c+2] == self.app.state[1,r+3,c+3] == self.app.state[1,r+4,c+4] == 1:
+                        return [(r, c), (r+1,c+1), (r+2,c+2), (r+3,c+3), (r+4,c+4)]
+                if c < GOMOKU_BOARD_SIZE - 4 and r >= 4:
+                    if self.app.state[0,r,c] == self.app.state[0,r-1,c+1] == self.app.state[0,r-2,c+2] == self.app.state[0,r-3,c+3] == self.app.state[0,r-4,c+4] == 1:
+                        return [(r, c), (r-1,c+1), (r-2,c+2), (r-3,c+3), (r-4,c+4)]
+                    if self.app.state[1,r,c] == self.app.state[1,r-1,c+1] == self.app.state[1,r-2,c+2] == self.app.state[1,r-3,c+3] == self.app.state[1,r-4,c+4] == 1:
+                        return [(r, c), (r-1,c+1), (r-2,c+2), (r-3,c+3), (r-4,c+4)]
         return []

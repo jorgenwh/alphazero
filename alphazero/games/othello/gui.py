@@ -1,15 +1,15 @@
 import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtGui import QFont
-from typing import List, Tuple
 
-from .othello_rules import OthelloRules
-from .othello_network import OthelloNetwork
-from alphazero.mcts import MCTS
-from alphazero.misc import Arguments, PrintColors
+from .rules import OthelloRules
+from .network import OthelloNetwork
+from ...mcts import MCTS
+from ...misc import PrintColors as PC
+from ...args import PLAY_TEMPERATURE
 
-class OthelloGui(QtWidgets.QMainWindow):
-    def __init__(self, rules: OthelloRules, network: OthelloNetwork, args: Arguments):
+class OthelloGUI(QtWidgets.QMainWindow):
+    def __init__(self, rules: OthelloRules, network: OthelloNetwork):
         super().__init__()
         self.setAutoFillBackground(True)
         p = self.palette()
@@ -18,17 +18,13 @@ class OthelloGui(QtWidgets.QMainWindow):
 
         self.rules = rules
         self.network = network
-        self.args = args
+        self.mcts = MCTS(self.rules, self.network)
 
-        # Build the MCTS that will provide the policy from AZ
-        self.mcts = MCTS(self.rules, self.network, self.args)
-
-        # Which player is the network currently playing as {1, -1}
-        self.network_turn = 1
-
+        self.network_turn = -1
         self.move = 1
         self.cur_player = 1
-        self.board = self.rules.get_start_board()
+        self.winner = None
+        self.state = self.rules.get_start_state()
 
         self.init_window()
         self.fps = 60
@@ -42,42 +38,45 @@ class OthelloGui(QtWidgets.QMainWindow):
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
         self.setGeometry(750, 280, 65*8 + 50, 65*8 + 50)
-
         self.othello_widget = OthelloWidget(self.centralWidget, self)
         self.othello_widget.setGeometry(25, 25, 65*8, 65*8)
 
     def step(self) -> None:
-        if self.cur_player == self.network_turn and not self.rules.is_concluded(self.board):
-            perspective = self.board if self.cur_player == 1 else self.rules.flip(self.board)
-            pi = self.mcts.get_policy(perspective, temperature=0)
+        if self.cur_player == self.network_turn and self.winner is None:
+            observation = self.state if self.cur_player == 1 else self.rules.flip_view(self.state)
+            pi = self.mcts.get_policy(observation, temperature=PLAY_TEMPERATURE)
             action = np.argmax(pi)
 
-            perceived_value = self.mcts.Q[(self.rules.to_string(perspective), action)]
+            perceived_value = self.mcts.Q[(self.rules.hash(observation), action)]
             if not isinstance(perceived_value, float):
                 perceived_value = perceived_value[0]
             perceived_value = perceived_value if self.network_turn == 1 else -perceived_value
-            self.print_perception(perceived_value)
+            self.print_perceived_value(perceived_value)
 
-            self.board = self.rules.step(self.board, action, self.cur_player)
+            self.state = self.rules.step(self.state, action, self.cur_player)
+            self.winner = self.rules.get_winner(self.state)
             self.cur_player *= -1
             self.othello_widget.draw()
 
-        elif not self.rules.is_concluded(self.board):
-            if sum(self.rules.get_valid_actions(self.board, -self.network_turn)) == 0:
-                self.board = self.rules.step(self.board, 0, self.cur_player)
+        elif self.winner is None:
+            if np.sum(self.rules.get_valid_actions(self.state, -self.network_turn)) == 0:
+                self.state = self.rules.step(self.state, 0, self.cur_player)
+                self.winner = self.rules.get_winner(self.state)
                 self.cur_player *= -1
                 self.othello_widget.draw()
 
     def player_step(self, action: int) -> None:
-        if self.rules.is_concluded(self.board):
-            self.board = self.rules.get_start_board()
+        if self.winner is not None:
+            self.state = self.rules.get_start_state()
+            self.winner = None
             self.cur_player = 1
             self.network_turn *= -1
-            self.othello_widget.draw()
             self.move = 1
+            self.othello_widget.draw()
         else:
-            if self.rules.get_valid_actions(self.board, self.cur_player)[action] and not self.rules.is_concluded(self.board):
-                self.board = self.rules.step(self.board, action, self.cur_player)
+            if self.rules.get_valid_actions(self.state, self.cur_player)[action] and self.winner is None:
+                self.state = self.rules.step(self.state, action, self.cur_player)
+                self.winner = self.rules.get_winner(self.state)
                 self.cur_player *= -1
                 self.othello_widget.draw()
 
@@ -88,7 +87,7 @@ class OthelloGui(QtWidgets.QMainWindow):
             self.timer.stop()
             exit()
 
-    def print_perception(self, perceived_value: float) -> None:
+    def print_perceived_value(self, perceived_value: float) -> None:
         perceived_str = str(round(perceived_value, 4))
         lp1w = str(round(max(perceived_value, 0) * 100, 1))
         lp2w = str(round(max(-perceived_value, 0) * 100, 1))
@@ -104,38 +103,38 @@ class OthelloGui(QtWidgets.QMainWindow):
         p2 = "AlphaZero" if self.network_turn == -1 else "Human    "
 
         if (self.network_turn == 1 and perceived_value > 0) or (self.network_turn == -1 and perceived_value < 0):
-            v_color = PrintColors.red
+            v_color = PC.red
         else:
-            v_color = PrintColors.green
+            v_color = PC.green
 
-        p1_color = PrintColors.green if self.network_turn == -1 else PrintColors.red
-        p2_color = PrintColors.green if self.network_turn == 1 else PrintColors.red
+        p1_color = PC.green if self.network_turn == -1 else PC.red
+        p2_color = PC.green if self.network_turn == 1 else PC.red
 
         evaluation_message = "AlphaZero is "
-        if v_color == PrintColors.green:
-            evaluation_message += "behind"
+        if v_color == PC.green:
+            evaluation_message += "worse "
         else:
-            evaluation_message = " " + evaluation_message + "ahead"
+            evaluation_message = evaluation_message + "better"
 
         move_len = len(str(self.move))
         move_suffix_space = "                           "
         move_suffix_space += " " * (4 - move_len)
 
-        print(f"{PrintColors.transparent}| ----------------------------------- |{PrintColors.endc}")
-        print(f"{PrintColors.transparent}|{PrintColors.endc} Move {self.move}{move_suffix_space}{PrintColors.transparent}|{PrintColors.endc}")
-        print(f"{PrintColors.transparent}|{PrintColors.endc} AlphaZero perceived value : {v_color}{PrintColors.bold}{perceived_str}{PrintColors.endc} {PrintColors.transparent}|{PrintColors.endc}")
-        print(f"{PrintColors.transparent}|{PrintColors.endc}                 {PrintColors.transparent}{evaluation_message} |{PrintColors.endc}")
-        print(f"{PrintColors.transparent}|{PrintColors.endc}                                     {PrintColors.transparent}|{PrintColors.endc}")
-        print(f"{PrintColors.transparent}|{PrintColors.endc}   AlphaZero perceived likelihoods   {PrintColors.transparent}|{PrintColors.endc}")
-        print(f"{PrintColors.transparent}|{PrintColors.endc} {p1} ({PrintColors.transparent}black{PrintColors.endc})     win : {p1_color}{PrintColors.bold}{lp1w}{PrintColors.endc}% {PrintColors.transparent}|{PrintColors.endc}")
-        print(f"{PrintColors.transparent}|{PrintColors.endc} {p2} (white)     win : {p2_color}{PrintColors.bold}{lp2w}{PrintColors.endc}% {PrintColors.transparent}|{PrintColors.endc}")
-        print(f"{PrintColors.transparent}|{PrintColors.endc}                      Draw : {PrintColors.bold}{ld}{PrintColors.endc}% {PrintColors.transparent}|{PrintColors.endc}")
-        print(f"{PrintColors.transparent}| ----------------------------------- |{PrintColors.endc}\n")
+        print(f"{PC.transparent}| ----------------------------------- |{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc} Move {self.move}{move_suffix_space}{PC.transparent}|{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc} AlphaZero perceived value : {v_color}{PC.bold}{perceived_str}{PC.endc} {PC.transparent}|{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc}                 {PC.transparent}{evaluation_message} |{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc}                                     {PC.transparent}|{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc}   AlphaZero perceived likelihoods   {PC.transparent}|{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc} {p1} ({PC.transparent}black{PC.endc})     win : {p1_color}{PC.bold}{lp1w}{PC.endc}% {PC.transparent}|{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc} {p2} (white)     win : {p2_color}{PC.bold}{lp2w}{PC.endc}% {PC.transparent}|{PC.endc}")
+        print(f"{PC.transparent}|{PC.endc}                      Draw : {PC.bold}{ld}{PC.endc}% {PC.transparent}|{PC.endc}")
+        print(f"{PC.transparent}| ----------------------------------- |{PC.endc}\n")
 
         self.move += 1
 
 class OthelloWidget(QtWidgets.QWidget):
-    def __init__(self, parent: QtWidgets.QWidget, app: OthelloGui):
+    def __init__(self, parent: QtWidgets.QWidget, app: OthelloGUI):
         super().__init__(parent)
         self.setAutoFillBackground(True)
         p = self.palette()
@@ -146,31 +145,19 @@ class OthelloWidget(QtWidgets.QWidget):
         self.show()
 
     def draw(self):
-        if self.app.rules.is_concluded(self.app.board):
-            self.winner = self.app.rules.get_result(self.app.board)
-            if self.winner == 1:
+        if self.app.winner is not None:
+            if self.app.winner == 1:
                 winner = "BLACK"
-            elif self.winner == -1:
+            elif self.app.winner == -1:
                 winner = "WHITE"
             else:
                 winner = "NONE"
-            b, w = self.get_scores(self.app.board)
+            b = int(np.sum(self.app.state[0]))
+            w = int(np.sum(self.app.state[1]))
             print(f"Winner: {winner} - Score B/W: {b}/{w}")
         else:
             self.winner = None
-
         self.repaint()
-
-    def get_scores(self, board: np.ndarray) -> Tuple[int, int]:
-        black = white = 0
-        for r in range(8):
-            for c in range(8):
-                if board[r,c] == 1:
-                    black += 1
-                elif board[r,c] == -1:
-                    white += 1
-
-        return black, white
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
@@ -194,28 +181,29 @@ class OthelloWidget(QtWidgets.QWidget):
             painter.drawLine(0, i*gap, bottom, i*gap)
 
     def draw_stones(self, painter: QtGui.QPainter) -> None:
-        valid_actions = self.app.rules.get_valid_actions(self.app.board, self.app.cur_player)
-
+        valid_actions = self.app.rules.get_valid_actions(self.app.state, self.app.cur_player)
         for r in range(8):
             for c in range(8):
-                if self.app.board[r,c] == 1:
-                    if self.winner == -1 or self.winner == 0:
+                # draw stones
+                if self.app.state[0,r,c] == 1:
+                    if self.app.winner == -1 or self.app.winner == 0:
                         self.draw_black(painter, (r, c), 0.6)
                     else:
-                        self.draw_black(painter, (r, c), 1)
-                elif self.app.board[r,c] == -1:
-                    if self.winner == 1 or self.winner == 0:
+                        self.draw_black(painter, (r, c), 1.0)
+                elif self.app.state[1,r,c] == 1:
+                    if self.app.winner == 1 or self.app.winner == 0:
                         self.draw_white(painter, (r, c), 0.6)
                     else:
-                        self.draw_white(painter, (r, c), 1)
+                        self.draw_white(painter, (r, c), 1.0)
 
-                if valid_actions[r * 8 + c]:
+                # draw valid moves
+                if valid_actions[r*8 + c]:
                     if self.app.cur_player == 1:
                         self.draw_black(painter, (r, c), 0.2)
                     elif self.app.cur_player == -1:
                         self.draw_white(painter, (r, c), 0.2)
                 
-    def draw_black(self, painter: QtGui.QPainter, intersection: Tuple[int, int], opacity: float) -> None:
+    def draw_black(self, painter: QtGui.QPainter, intersection: tuple[int, int], opacity: float) -> None:
         painter.setBrush(QtGui.QBrush(QtGui.QColor(40, 40, 40)))
         painter.setOpacity(opacity)
         gap = self.frameGeometry().width() / 8
@@ -223,7 +211,7 @@ class OthelloWidget(QtWidgets.QWidget):
         y = 8.5 + intersection[0] * gap
         painter.drawEllipse(x, y, gap*0.75, gap*0.75)
     
-    def draw_white(self, painter: QtGui.QPainter, intersection: Tuple[int, int], opacity: float) -> None:
+    def draw_white(self, painter: QtGui.QPainter, intersection: tuple[int, int], opacity: float) -> None:
         painter.setBrush(QtGui.QBrush(QtGui.QColor(215, 215, 215))) 
         painter.setOpacity(opacity)
         gap = self.frameGeometry().width() / 8
