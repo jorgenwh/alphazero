@@ -4,9 +4,37 @@ import torch.nn.functional as F
 
 from .args import RESIDUAL_BLOCKS
 
+
+class MLP(nn.Module):
+    def __init__(self, in_features: int, hidden_features: list[int, ...], action_space: int):
+        super().__init__()
+        self.in_features = in_features
+        self.feature_dims = hidden_features
+        self.action_space = action_space
+        layers = []
+        feature_dims = [in_features] + hidden_features
+        for i in range(len(feature_dims) - 1):
+            layers.append(nn.Linear(feature_dims[i], feature_dims[i + 1]))
+            layers.append(nn.ReLU())
+        self.layers = nn.Sequential(*layers)
+
+        self.pi = nn.Linear(self.feature_dims[-1], action_space)
+        self.v = nn.Linear(self.feature_dims[-1], 1)
+
+    def forward(self, x):
+        N, F = x.shape
+
+        r = self.layers(x)
+        pi = self.pi(r)
+        v = self.v(r)
+        v = torch.tanh(v)
+
+        return pi, v
+
 class ResNet(nn.Module):
     """general resnet implementation that will work for most board games"""
-    def __init__(self, in_height, in_width, in_channels, action_space):
+    def __init__(self, 
+            in_height: int, in_width: int, in_channels: int, action_space: int):
         super().__init__()
         self.in_height = in_height
         self.in_width = in_width
@@ -25,19 +53,18 @@ class ResNet(nn.Module):
             nn.Conv2d(in_channels=256, out_channels=2, kernel_size=1, stride=1),
             nn.BatchNorm2d(num_features=2)
         )
-        self.pi = torch.nn.Linear(2 * self.in_height * self.in_width, self.action_space)
+        self.pi = nn.Linear(2 * self.in_height * self.in_width, self.action_space)
 
         # value head
         self.v_conv_bn = nn.Sequential(
             nn.Conv2d(in_channels=256, out_channels=1, kernel_size=1, stride=1),
             nn.BatchNorm2d(num_features=1)
         )
-        self.v_fc = torch.nn.Linear(self.in_height * self.in_width, 256)
-        self.v = torch.nn.Linear(256, 1)
+        self.v_fc = nn.Linear(self.in_height * self.in_width, 256)
+        self.v = nn.Linear(256, 1)
 
     def forward(self, x):
         N, C, H, W = x.shape
-        assert C == self.in_channels and H == self.in_height and W == self.in_width # TODO: remove
 
         # residual tower forward
         r = self.conv_block(x)
