@@ -1,7 +1,7 @@
 import alphazero
 from alphazero import Trainer
-from alphazero import Connect4Rules as Rules
-from alphazero import Connect4Network as Network
+from alphazero import LudoRules as Rules
+from alphazero import LudoNetwork as Network
 
 if __name__ == "__main__":
     network = Network()

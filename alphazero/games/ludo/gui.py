@@ -1,3 +1,4 @@
+import time
 import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtGui import QPolygon, QPen, QColor
@@ -17,6 +18,10 @@ BLUE = QtGui.QColor(75, 75, 255)
 BLUE_PIECE = QtGui.QColor(0, 0, 255)
 YELLOW = QtGui.QColor(255, 255, 75)
 YELLOW_PIECE = QtGui.QColor(255, 255, 0)
+RED_LOST = QtGui.QColor(75, 0, 0)
+GREEN_LOST = QtGui.QColor(0, 75, 0)
+BLUE_LOST = QtGui.QColor(0, 0, 75)
+YELLOW_LOST = QtGui.QColor(75, 75, 0)
 
 RED_INDEX_TO_POS = [
         None, 
@@ -52,6 +57,7 @@ YELLOW_INDEX_TO_POS = [
         (13*60, 7*60), (12*60, 7*60), (11*60, 7*60), (10*60, 7*60), (9*60, 7*60)
 ]
 
+
 class LudoGUI(QtWidgets.QMainWindow):
     def __init__(self, rules: LudoRules, network: LudoNetwork):
         super().__init__()
@@ -66,19 +72,21 @@ class LudoGUI(QtWidgets.QMainWindow):
         self.state = self.rules.get_start_state()
 
         self.init_window()
-        self.fps = 60 
+        self.fps = 60
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.step)
         self.timer.start(1000 / self.fps)
         self.show()
 
     def init_window(self) -> None:
-        self.setFixedSize(900, 900)
+        self.setFixedSize(1100, 900)
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
-        self.setGeometry(0, 0, 900, 900)
+        self.setGeometry(1100, 250, 1100, 900)
+        self.dice_widget = DiceWidget(self.centralWidget, self)
+        self.dice_widget.setGeometry(0, 0, 200, 900)
         self.ludo_widget = LudoWidget(self.centralWidget, self)
-        self.ludo_widget.setGeometry(0, 0, 900, 900)
+        self.ludo_widget.setGeometry(200, 0, 900, 900)
 
     def step(self) -> None:
         if self.cur_player == self.network_turn and self.winner is None:
@@ -95,7 +103,16 @@ class LudoGUI(QtWidgets.QMainWindow):
             self.state = self.rules.step(self.state, action, self.cur_player)
             self.winner = self.rules.get_winner(self.state)
             self.cur_player *= -1
+            self.dice_widget.draw()
             self.ludo_widget.draw()
+
+        elif self.winner is None:
+            if np.sum(self.rules.get_valid_actions(self.state, -self.network_turn)) == 0:
+                self.state = self.rules.step(self.state, 0, self.cur_player)
+                self.winner = self.rules.get_winner(self.state)
+                self.cur_player *= -1
+                self.dice_widget.draw()
+                self.ludo_widget.draw()
 
     def player_step(self, action: int) -> None:
         if self.winner is not None:
@@ -103,14 +120,15 @@ class LudoGUI(QtWidgets.QMainWindow):
             self.winner = None
             self.cur_player = 1
             self.network_turn *= -1
-            self.mcts = MCTS(self.rules, self.network)
             self.move = 1
+            self.dice_widget.draw()
             self.ludo_widget.draw()
         else:
             if self.rules.get_valid_actions(self.state, self.cur_player)[action] and self.winner is None:
                 self.state = self.rules.step(self.state, action, self.cur_player)
                 self.winner = self.rules.get_winner(self.state)
                 self.cur_player *= -1
+                self.dice_widget.draw()
                 self.ludo_widget.draw()
 
     def keyPressEvent(self, event):
@@ -165,10 +183,89 @@ class LudoGUI(QtWidgets.QMainWindow):
         print(f"{PC.transparent}| ----------------------------------- |{PC.endc}\n")
 
         self.move += 1
+
+
+class DiceWidget(QtWidgets.QWidget):
+    def __init__(self, parent: QtWidgets.QWidget, app: LudoGUI):
+        super().__init__(parent)
+        self.app = app
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QtGui.QColor(50, 50, 50))
+        self.setPalette(p)
+        self.show()
+
+    def draw(self) -> None:
+        self.repaint()
+
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        self.draw_dice(painter)
+        self.draw_cur_player_piece(painter)
+        painter.end()
+
+    def draw_dice(self, painter: QtGui.QPainter) -> None:
+        painter.setRenderHints(QtGui.QPainter.Antialiasing)
+        painter.setRenderHints(QtGui.QPainter.HighQualityAntialiasing)
+        painter.setRenderHint(QtGui.QPainter.TextAntialiasing)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        painter.setPen(QtGui.QPen(QtCore.Qt.black))
+        
+        font = QtGui.QFont("Helvetica", 60)
+        painter.setFont(font)
+
+        painter.setPen(QtGui.QPen(QtCore.Qt.white))
+        painter.setBrush(QtCore.Qt.white)
+        painter.drawRect(25, 375, 150, 150)
+
+        painter.setPen(QtGui.QPen(QtCore.Qt.black))
+        painter.setBrush(QtCore.Qt.black)
+        roll = int(np.argmax(self.app.state[1])) + 1
+        painter.drawText(
+                25, 375, 150, 150, QtCore.Qt.AlignCenter, 
+                f"{roll}")
+
+        font = QtGui.QFont("Helvetica", 25)
+        painter.setFont(font)
+
+        painter.setPen(QtGui.QPen(QtCore.Qt.white))
+        painter.setBrush(QtCore.Qt.white)
+        painter.drawText(
+                25, 275, 150, 150, QtCore.Qt.AlignCenter, 
+                "ROLL:")
+
+    def draw_cur_player_piece(self, painter: QtGui.QPainter) -> None:
+        painter.setRenderHints(QtGui.QPainter.Antialiasing)
+        painter.setRenderHints(QtGui.QPainter.HighQualityAntialiasing)
+        painter.setRenderHint(QtGui.QPainter.TextAntialiasing)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        painter.setPen(QtGui.QPen(QtCore.Qt.black))
+        
+        font = QtGui.QFont("Helvetica", 25)
+        painter.setFont(font)
+
+        color = RED if self.app.cur_player == 1 else YELLOW
+
+        painter.setPen(QtGui.QPen(color))
+        painter.setBrush(color)
+        painter.drawEllipse(62.5, 200, 75, 75)
+
+        painter.setPen(QtGui.QPen(QtCore.Qt.white))
+        painter.setBrush(QtCore.Qt.white)
+        painter.drawText(
+                25, 100, 150, 150, QtCore.Qt.AlignCenter, 
+                "TURN:")
+
     
 class LudoWidget(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget, app: LudoGUI):
         super().__init__(parent)
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QtGui.QColor(255, 255, 255))
+        self.setPalette(p)
+
         self.app = app
         self.show()
 
@@ -192,9 +289,23 @@ class LudoWidget(QtWidgets.QWidget):
         font = QtGui.QFont("Helvetica", 12)
         painter.setFont(font)
 
+        winner = self.app.winner
+        _red = RED
+        _green = GREEN
+        _blue = BLUE
+        _yellow = YELLOW
+        if winner == 1:
+            _green = GREEN_LOST
+            _blue = BLUE_LOST
+            _yellow = YELLOW_LOST
+        if winner == -1:
+            _red = RED_LOST
+            _blue = BLUE_LOST
+            _green = GREEN_LOST
+
         # color
         # red
-        painter.setBrush(QtGui.QBrush(RED))
+        painter.setBrush(QtGui.QBrush(_red))
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(60, 6*60, 60, 60)
         for i in range(1, 6):
@@ -208,7 +319,7 @@ class LudoWidget(QtWidgets.QWidget):
         painter.drawPolygon(triangle)
 
         # green
-        painter.setBrush(QtGui.QBrush(GREEN))
+        painter.setBrush(QtGui.QBrush(_green))
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(8*60, 1*60, 60, 60)
         for i in range(1, 6):
@@ -222,7 +333,7 @@ class LudoWidget(QtWidgets.QWidget):
         painter.drawPolygon(triangle)
 
         # blue
-        painter.setBrush(QtGui.QBrush(BLUE))
+        painter.setBrush(QtGui.QBrush(_blue))
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(6*60, 13*60, 60, 60)
         for i in range(1, 6):
@@ -236,7 +347,7 @@ class LudoWidget(QtWidgets.QWidget):
         painter.drawPolygon(triangle)
 
         # yellow
-        painter.setBrush(QtGui.QBrush(YELLOW))
+        painter.setBrush(QtGui.QBrush(_yellow))
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(13*60, 8*60, 60, 60)
         for i in range(1, 6):
@@ -286,25 +397,25 @@ class LudoWidget(QtWidgets.QWidget):
 
         # draw circles
         # top left
-        painter.setBrush(QtGui.QBrush(RED))
+        painter.setBrush(QtGui.QBrush(_red))
         painter.drawEllipse(1.5*60, 1.5*60, 60, 60)
         painter.drawEllipse(1.5*60, 3.5*60, 60, 60)
         painter.drawEllipse(3.5*60, 1.5*60, 60, 60)
         painter.drawEllipse(3.5*60, 3.5*60, 60, 60)
         # top right
-        painter.setBrush(QtGui.QBrush(GREEN))
+        painter.setBrush(QtGui.QBrush(_green))
         painter.drawEllipse(10.5*60, 1.5*60, 60, 60)
         painter.drawEllipse(10.5*60, 3.5*60, 60, 60)
         painter.drawEllipse(12.5*60, 1.5*60, 60, 60)
         painter.drawEllipse(12.5*60, 3.5*60, 60, 60)
         # bottom left
-        painter.setBrush(QtGui.QBrush(BLUE))
+        painter.setBrush(QtGui.QBrush(_blue))
         painter.drawEllipse(1.5*60, 10.5*60, 60, 60)
         painter.drawEllipse(1.5*60, 12.5*60, 60, 60)
         painter.drawEllipse(3.5*60, 10.5*60, 60, 60)
         painter.drawEllipse(3.5*60, 12.5*60, 60, 60)
         # bottom right
-        painter.setBrush(QtGui.QBrush(YELLOW))
+        painter.setBrush(QtGui.QBrush(_yellow))
         painter.drawEllipse(10.5*60, 10.5*60, 60, 60)
         painter.drawEllipse(10.5*60, 12.5*60, 60, 60)
         painter.drawEllipse(12.5*60, 10.5*60, 60, 60)
@@ -383,7 +494,10 @@ class LudoWidget(QtWidgets.QWidget):
                 painter.drawEllipse(637.5, 637.5, 45, 45)
             else:
                 rectx, recty = YELLOW_INDEX_TO_POS[idx]
-                painter.drawEllipse(rectx + 7.5, recty + 7.5, 45, 45)
+                if idx == 1 and np.sum(board[:4,27]) != 0:
+                    painter.drawEllipse(rectx + 12.5, recty + 12.5, 35, 35)
+                else:
+                    painter.drawEllipse(rectx + 7.5, recty + 7.5, 45, 45)
         # piece 2
         if np.sum(board[5]) == 1:
             idx = np.argmax(board[5])
@@ -391,7 +505,10 @@ class LudoWidget(QtWidgets.QWidget):
                 painter.drawEllipse(757.5, 637.5, 45, 45)
             else:
                 rectx, recty = YELLOW_INDEX_TO_POS[idx]
-                painter.drawEllipse(rectx + 7.5, recty + 7.5, 45, 45)
+                if idx == 1 and np.sum(board[:4,27]) != 0:
+                    painter.drawEllipse(rectx + 12.5, recty + 12.5, 35, 35)
+                else:
+                    painter.drawEllipse(rectx + 7.5, recty + 7.5, 45, 45)
         # piece 3
         if np.sum(board[6]) == 1:
             idx = np.argmax(board[6])
@@ -399,7 +516,10 @@ class LudoWidget(QtWidgets.QWidget):
                 painter.drawEllipse(637.5, 757.5, 45, 45)
             else:
                 rectx, recty = YELLOW_INDEX_TO_POS[idx]
-                painter.drawEllipse(rectx + 7.5, recty + 7.5, 45, 45)
+                if idx == 1 and np.sum(board[:4,27]) != 0:
+                    painter.drawEllipse(rectx + 12.5, recty + 12.5, 35, 35)
+                else:
+                    painter.drawEllipse(rectx + 7.5, recty + 7.5, 45, 45)
         # piece 4
         if np.sum(board[7]) == 1:
             idx = np.argmax(board[7])
@@ -407,8 +527,63 @@ class LudoWidget(QtWidgets.QWidget):
                 painter.drawEllipse(757.5, 757.5, 45, 45)
             else:
                 rectx, recty = YELLOW_INDEX_TO_POS[idx]
-                painter.drawEllipse(rectx + 7.5, recty + 7.5, 45, 45)
+                if idx == 1 and np.sum(board[:4,27]) != 0:
+                    painter.drawEllipse(rectx + 12.5, recty + 12.5, 35, 35)
+                else:
+                    painter.drawEllipse(rectx + 7.5, recty + 7.5, 45, 45)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        print(event.pos())
+        if self.app.winner is not None:
+            self.app.player_step(None)
+
+        x, y = event.pos().x(), event.pos().y()
+        player = self.app.cur_player
+        table = RED_INDEX_TO_POS if player == 1 else YELLOW_INDEX_TO_POS
+        board = self.app.state[0]
+        player_board = board[:4] if player == 1 else board[4:]
+
+        # ugly edge case for "in" pieces
+        # player 1 in pieces
+        if x >= 97.5 and x <= 97.5 + 45 and y >= 97.5 and y <= 97.5 + 45:
+            if player == 1 and board[0,0] == 1:
+                self.app.player_step(0)
+                return
+        if x >= 217.5 and x <= 217.5 + 45 and y >= 97.5 and y <= 97.5 + 45:
+            if player == 1 and board[1,0] == 1:
+                self.app.player_step(1)
+                return
+        if x >= 97.5 and x <= 97.5 + 45 and y >= 217.5 and y <= 217.5 + 45:
+            if player == 1 and board[2,0] == 1:
+                self.app.player_step(2)
+                return
+        if x >= 217.5 and x <= 217.5 + 45 and y >= 217.5 and y <= 217.5 + 45:
+            if player == 1 and board[3,0] == 1:
+                self.app.player_step(3)
+                return
+
+        # player -1 in pieces
+        if x >= 637.5 and x <= 637.5 + 45 and y >= 637.5 and y <= 637.5 + 45:
+            if player == -1 and board[4,0] == 1:
+                self.app.player_step(0)
+                return
+        if x >= 757.5 and x <= 757.5 + 45 and y >= 637.5 and y <= 637.5 + 45:
+            if player == -1 and board[5,0] == 1:
+                self.app.player_step(1)
+                return
+        if x >= 637.5 and x <= 637.5 + 45 and y >= 757.5 and y <= 757.5 + 45:
+            if player == -1 and board[6,0] == 1:
+                self.app.player_step(2)
+                return
+        if x >= 757.5 and x <= 757.5 + 45 and y >= 757.5 and y <= 757.5 + 45:
+            if player == -1 and board[7,0] == 1:
+                self.app.player_step(3)
+                return
+
+        for px, py in table[1:]:
+            if x >= px and x <= px + 45 and y >= py and y <= py + 45:
+                idx = table.index((px, py))
+                for i in range(4):
+                    if player_board[i, idx] == 1:
+                        self.app.player_step(i)
+                        return
 

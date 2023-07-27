@@ -5,6 +5,9 @@ from PyQt5 import QtWidgets
 
 # import whatever game you want to play 
 # {Connect4, TicTacToe, Othello, Gomoku, Ludo}
+#from alphazero import Connect4Network as Network
+#from alphazero import Connect4Rules as Rules
+#from alphazero import Connect4GUI as GUI
 from alphazero import LudoNetwork as Network
 from alphazero import LudoRules as Rules
 from alphazero import LudoGUI as GUI
@@ -15,7 +18,7 @@ if __name__ == "__main__":
 
     # load a pre-trained network
     name = None
-    #name = "training/connect4/model_checkpoint_games.pt"
+    #name = "training/connect4/model_checkpoint_1200games.pt"
 
     if name is not None:
         print(f"loading pre-trained network: {name}")

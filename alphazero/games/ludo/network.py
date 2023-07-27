@@ -23,7 +23,7 @@ class LudoNetwork(Network):
             self.device = torch.device("cuda:0")
         else:
             self.device = torch.device("cpu")
-        self.model = MLP(in_features=8*57, hidden_features=[2048, 1024, 512], action_space=4).to(self.device)
+        self.model = MLP(in_features=8*57 + 6, hidden_features=[2048, 1024, 512], action_space=4).to(self.device)
         self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=LEARNING_RATE)
 
     def __call__(self, 
@@ -52,7 +52,12 @@ class LudoNetwork(Network):
             bar = tqdm(range(steps), desc="training", bar_format="{l_bar}{bar}| update: {n_fmt}/{total_fmt} - {unit} - elapsed: {elapsed}")
             for _ in bar:
                 indices = np.random.randint(len(replay_memory), size=BATCH_SIZE)
-                observations, pis, vs = list(zip(*[replay_memory[i] for i in indices]))
+                obs, pis, vs = list(zip(*[replay_memory[i] for i in indices]))
+                observations = np.zeros((BATCH_SIZE, 8*57 + 6), dtype=np.float32)
+                for i, o in enumerate(obs):
+                    board_observation = o[0].reshape(1, 8*57)
+                    roll_observation = o[1].reshape(1, 6)
+                    observations[i] = np.concatenate([board_observation, roll_observation], axis=1)
 
                 observations = torch.FloatTensor(observations).to(self.device)
                 pis = torch.FloatTensor(pis).to(self.device)

@@ -4,7 +4,7 @@ RESIDUAL_BLOCKS: int = 2
 CUDA: bool = True
 
 # algorithm
-ITERATIONS: int = 20
+ITERATIONS: int = 10
 EPISODES: int = 100
 REPLAY_MEMORY_SIZE: int = 50000
 EVALUATION_MATCHES: int = 40
