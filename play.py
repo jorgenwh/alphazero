@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     # load a pre-trained network
     name = None
-    #name = "training/connect4/model_checkpoint_1200games.pt"
+    name = "training/ludo/model_checkpoint_300games.pt"
 
     if name is not None:
         print(f"loading pre-trained network: {name}")

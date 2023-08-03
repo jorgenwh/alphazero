@@ -1,1 +1,1 @@
-A simple AlphaZero implementation in python.
+A simple AlphaZero implementation in Python
