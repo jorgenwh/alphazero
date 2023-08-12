@@ -18,13 +18,13 @@ def load_checkpoint(dir_name: str, network: Network, games_played: int) -> None:
 
 
 def setup_training_session() -> str:
-    if not os.path.isdir("training"):
-        os.mkdir("training")
+    if not os.path.isdir("output"):
+        os.mkdir("output")
 
     inp = input("name this training session's directory: ")
-    while os.path.isdir("training/" + inp):
+    while os.path.isdir("output/" + inp):
         inp = input("directory already exists, please choose another name: ")
-    dir_name = "training/" + inp + "/"
+    dir_name = "output/" + inp + "/"
     os.mkdir(dir_name)
 
     f = open(dir_name + "config", "w")

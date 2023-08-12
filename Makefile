@@ -10,6 +10,7 @@ dev-install: clean
 
 uninstall: clean
 	pip uninstall alphazero
+	$(RM) alphazero_C.cpython-39-x86_64-linux-gnu.so
 
 clean:
 	$(RM) -rf __pycache__
