@@ -3,11 +3,12 @@ from tqdm import tqdm
 from collections import deque
 
 from .rules import Rules
+from .replay_memory import ReplayMemory
 from .network import Network
 from .mcts import MCTS
 from .args import EPISODES, SELFPLAY_TEMPERATURE
 
-def selfplay(rules: Rules, network: Network, replay_memory: deque) -> None:
+def selfplay(rules: Rules, network: Network, replay_memory: ReplayMemory) -> None:
     for i in tqdm(
             range(EPISODES), 
             desc="self-play", 
@@ -17,7 +18,7 @@ def selfplay(rules: Rules, network: Network, replay_memory: deque) -> None:
         play_episode(rules, mcts, replay_memory)
     return EPISODES
 
-def play_episode(rules: Rules, mcts: MCTS, replay_memory: deque) -> None:
+def play_episode(rules: Rules, mcts: MCTS, replay_memory: ReplayMemory) -> None:
     state = rules.get_start_state() 
     sequence = deque()
     cur_player = 1
@@ -34,4 +35,4 @@ def play_episode(rules: Rules, mcts: MCTS, replay_memory: deque) -> None:
 
     for i, (observation, pi, player) in enumerate(sequence):
         v = (1 if player == winner else -1) if winner else 0
-        replay_memory.append((observation, pi, v))
+        replay_memory.insert(observation, pi, v)

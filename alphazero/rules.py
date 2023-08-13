@@ -11,6 +11,9 @@ class Rules:
     def get_action_space(self) -> int:
         raise NotImplementedError
 
+    def get_state_shape(self) -> tuple[int, ...]:
+        raise NotImplementedError
+
     def get_valid_actions(self, 
             state: Union[np.ndarray, tuple[np.ndarray, ...]], 
             player: int

@@ -66,6 +66,9 @@ class OthelloRules(Rules):
     def get_action_space(self) -> int:
         return 64
 
+    def get_state_shape(self) -> tuple[int, ...]:
+        return (2, 8, 8)
+
     def get_valid_actions(self, state: np.ndarray, player: int) -> np.ndarray:
         valid_actions = np.zeros(64, dtype=np.float32)
         valids = set()

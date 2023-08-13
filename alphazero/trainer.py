@@ -1,10 +1,12 @@
 import os
 import time
-from collections import deque
 import torch
+import numpy as np
+from collections import deque
 
 from .rules import Rules
 from .network import Network
+from .replay_memory import ReplayMemory
 from .selfplay import selfplay
 from .evaluate import evaluate
 from .args import ITERATIONS, EPISODES, REPLAY_MEMORY_SIZE, ACCEPTANCE_THRESHOLD
@@ -28,7 +30,8 @@ class Trainer():
         self.rules = rules
         self.network = network
         self.checkpoint_network = network.__class__()
-        self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
+        self.replay_memory = ReplayMemory(
+                REPLAY_MEMORY_SIZE, self.rules.get_state_shape(), self.rules.get_action_space())
         self.played_games = 0
         self.last_saved_checkpoint = 0
         save_checkpoint(self.dir_name, self.network, self.played_games)
@@ -36,7 +39,7 @@ class Trainer():
 
     def start(self) -> None:
         for i in range(ITERATIONS):
-            print(f"{PC.transparent}-----{PC.endc} {PC.bold}Iteration: {i + 1}/{ITERATIONS}{PC.endc} {PC.transparent}-----{PC.endc}\n")
+            print(f"\n{PC.transparent}-----{PC.endc} {PC.bold}Iteration: {i + 1}/{ITERATIONS}{PC.endc} {PC.transparent}-----{PC.endc}\n")
             t1 = time.time()
 
             # self-play for training data generation
@@ -66,5 +69,5 @@ class Trainer():
 
             t2 = time.time()
             t = get_time_stamp(t2 - t1)
-            print(f"\niteration time: {t}\n\n")
+            print(f"\niteration time: {t}\n")
     

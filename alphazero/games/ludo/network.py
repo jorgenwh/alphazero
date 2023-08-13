@@ -3,6 +3,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
+from ...replay_memory import ReplayMemory
 from ...network import Network
 from ...models import MLP
 from ...misc import AverageMeter
@@ -42,6 +43,7 @@ class LudoNetwork(Network):
         v = v[0].cpu().data.detach().numpy()
         return pi, v
 
+    # TODO: support new ReplayMemory data structure
     def train(self, replay_memory: deque) -> None:
         self.model.train()
         for epoch in range(EPOCHS):

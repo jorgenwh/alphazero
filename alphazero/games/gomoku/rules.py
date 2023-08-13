@@ -18,6 +18,9 @@ class GomokuRules(Rules):
     def get_action_space(self) -> int:
         return GOMOKU_BOARD_SIZE**2
 
+    def get_state_shape(self) -> tuple[int, ...]:
+        return (2, GOMOKU_BOARD_SIZE, GOMOKU_BOARD_SIZE)
+
     def get_valid_actions(self, state: np.ndarray, player: int) -> np.ndarray:
         valid_actions = np.zeros(GOMOKU_BOARD_SIZE**2, dtype=np.float32)
         for r in range(GOMOKU_BOARD_SIZE):

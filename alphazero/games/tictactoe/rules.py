@@ -15,6 +15,9 @@ class TicTacToeRules(Rules):
     def get_action_space(self) -> int:
         return 9
 
+    def get_state_shape(self) -> tuple[int, ...]:
+        return (2, 3, 3)
+
     def get_valid_actions(self, state: np.ndarray, player: int) -> np.ndarray:
         valid_actions = np.zeros(9, dtype=np.float32)
         for i in range(9):

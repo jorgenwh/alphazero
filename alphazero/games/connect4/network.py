@@ -1,8 +1,8 @@
-from collections import deque
 import torch
 import numpy as np
 from tqdm import tqdm
 
+from ...replay_memory import ReplayMemory
 from ...network import Network
 from ...models import ResNet
 from ...misc import AverageMeter
@@ -28,7 +28,7 @@ class Connect4Network(Network):
 
     def __call__(self, observation: np.ndarray) -> tuple[np.ndarray, float]:
         observation = observation.reshape(1, 2, 6, 7)
-        observation = torch.FloatTensor(observation).to(self.device)
+        observation = torch.from_numpy(observation).to(self.device)
 
         self.model.eval()
         with torch.no_grad():
@@ -38,7 +38,7 @@ class Connect4Network(Network):
         v = v[0].cpu().data.detach().numpy()
         return pi, v
 
-    def train(self, replay_memory: deque) -> None:
+    def train(self, replay_memory: ReplayMemory) -> None:
         self.model.train()
         for epoch in range(EPOCHS):
             print(f"Epoch: {epoch+1}/{EPOCHS}")
@@ -47,12 +47,11 @@ class Connect4Network(Network):
 
             bar = tqdm(range(steps), desc="training", bar_format="{l_bar}{bar}| update: {n_fmt}/{total_fmt} - {unit} - elapsed: {elapsed}")
             for _ in bar:
-                indices = np.random.randint(len(replay_memory), size=BATCH_SIZE)
-                observations, pis, vs = list(zip(*[replay_memory[i] for i in indices]))
+                observations, pis, vs = replay_memory.get_random_batch(num_samples=BATCH_SIZE)
 
-                observations = torch.FloatTensor(observations).to(self.device)
-                pis = torch.FloatTensor(pis).to(self.device)
-                vs = torch.FloatTensor(vs).to(self.device)
+                observations = torch.from_numpy(observations).to(self.device)
+                pis = torch.from_numpy(pis).to(self.device)
+                vs = torch.from_numpy(vs).to(self.device)
 
                 pi, v = self.model(observations)
 

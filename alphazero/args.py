@@ -1,6 +1,6 @@
 # network
 START_MODEL: str = None
-RESIDUAL_BLOCKS: int = 2
+RESIDUAL_BLOCKS: int = 1
 CUDA: bool = True
 
 # algorithm
@@ -13,7 +13,7 @@ SELFPLAY_TEMPERATURE: float = 0.85
 EVALUATION_TEMPERATURE: float = 1.0
 PLAY_TEMPERATURE: float = 1.0
 CPUCT: float = 1.0
-MONTE_CARLO_LEAF_ROLLOUTS: int = 40
+MONTE_CARLO_LEAF_ROLLOUTS: int = 20
 
 # network training
 BATCH_SIZE: int = 64

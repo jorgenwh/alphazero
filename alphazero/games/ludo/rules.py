@@ -64,6 +64,9 @@ class LudoRules(Rules):
     def get_action_space(self) -> int:
         return 4
 
+    def get_state_shape(self) -> tuple[int, ...]:
+        return (8*57 + 6,)
+
     def get_valid_actions(self, state: np.ndarray, player: int) -> np.ndarray:
         valid_actions = np.zeros(4, dtype=np.float32)
         board, roll = state
