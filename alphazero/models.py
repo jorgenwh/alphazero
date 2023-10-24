@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class MLP(nn.Module):
     def __init__(self, in_features: int, hidden_features: list[int, ...], action_space: int):
         super().__init__()

@@ -1,8 +1,6 @@
 import os
 import time
 import torch
-import numpy as np
-from collections import deque
 
 from .rules import Rules
 from .network import Network

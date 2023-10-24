@@ -4,6 +4,17 @@
   <img src="./assets/ai-game-player.png" width="300">
 </p>
 
+## Installation and setup
+To install the necessary dependencies:
+```bash
+pip install torch numpy tqdm pyqt5
+```
+
+Optionally, if you wish to install alphazero (although this is not necessary to use it):
+```bash
+pip install .
+```
+
 ## Usage
 
 ### Training a new neural network

@@ -33,19 +33,20 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Populate the config
-    populate_config(config, 
-                    ITERATIONS=args.iterations, 
-                    EPISODES=args.episodes, 
-                    REPLAY_MEMORY_SIZE=args.replay_memory_size, 
-                    EVALUATION_MATCHES=args.evaluation_matches, 
-                    ACCEPTANCE_THRESHOLD=args.acceptance_threshold, 
-                    TEMPERATURE=args.temperature, 
-                    MONTE_CARLO_ROLLOUTS=args.monte_carlo_rollouts, 
-                    CUDA=args.cuda, 
-                    RESIDUAL_BLOCKS=args.residual_blocks, 
-                    LEARNING_RATE=args.learning_rate, 
-                    EPOCHS=args.epochs, 
-                    BATCH_SIZE=args.batch_size)
+    populate_config(
+       config, 
+       ITERATIONS=args.iterations, 
+       EPISODES=args.episodes, 
+       REPLAY_MEMORY_SIZE=args.replay_memory_size, 
+       EVALUATION_MATCHES=args.evaluation_matches, 
+       ACCEPTANCE_THRESHOLD=args.acceptance_threshold, 
+       TEMPERATURE=args.temperature, 
+       MONTE_CARLO_ROLLOUTS=args.monte_carlo_rollouts, 
+       CUDA=args.cuda, 
+       RESIDUAL_BLOCKS=args.residual_blocks, 
+       LEARNING_RATE=args.learning_rate, 
+       EPOCHS=args.epochs, 
+       BATCH_SIZE=args.batch_size)
 
     # Initialize the game rules and neural network
     if args.game == "Connect4":
