@@ -26,7 +26,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Populate the config
-    populate_config(config, TEMPERATURE=args.temperature, MONTE_CARLO_ROLLOUTS=args.monte_carlo_rollouts, CUDA=args.cuda, RESIDUAL_BLOCKS=args.residual_blocks, LEARNING_RATE=0.001)
+    populate_config(config, 
+                    TEMPERATURE=args.temperature, 
+                    MONTE_CARLO_ROLLOUTS=args.monte_carlo_rollouts, 
+                    CUDA=args.cuda, 
+                    RESIDUAL_BLOCKS=args.residual_blocks, 
+                    LEARNING_RATE=0.001)
 
     # Initialize the game rules and neural network
     app = QtWidgets.QApplication(sys.argv)

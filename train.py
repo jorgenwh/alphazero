@@ -24,7 +24,7 @@ if __name__ == "__main__":
     parser.add_argument("--evaluation_matches", type=int, default=40, help="Number of evaluation matches to perform at the end of each iteration.")
     parser.add_argument("--acceptance_threshold", type=float, default=0.55, help="Acceptance threshold for new checkpoints.")
     parser.add_argument("--temperature", type=float, default=1.0, help="Determines the greediness of the agent. A high temperature means more deterministic and greedy play. Value must be in the (0.0, 1.0) range.")
-    parser.add_argument("--monte_carlo_rollouts", type=int, default=160, help="Number of monte-carlo search rollouts to perform per action. More rollouts results in stronger play but longer think-time.")
+    parser.add_argument("--monte_carlo_rollouts", type=int, default=120, help="Number of monte-carlo search rollouts to perform per action. More rollouts results in stronger play but longer think-time.")
     parser.add_argument("--cuda", type=bool, default=True, help="Whether or not to use CUDA.")
     parser.add_argument("--residual_blocks", type=int, default=2, help="Number of residual blocks in the neural network. Defaults to 2.")
     parser.add_argument("--learning_rate", type=float, default=0.001, help="Learning rate for the neural network. Defaults to 0.001.")
@@ -33,7 +33,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Populate the config
-    populate_config(config, ITERATIONS=args.iterations, EPISODES=args.episodes, REPLAY_MEMORY_SIZE=args.replay_memory_size, EVALUATION_MATCHES=args.evaluation_matches, ACCEPTANCE_THRESHOLD=args.acceptance_threshold, TEMPERATURE=args.temperature, MONTE_CARLO_ROLLOUTS=args.monte_carlo_rollouts, CUDA=args.cuda, RESIDUAL_BLOCKS=args.residual_blocks, LEARNING_RATE=args.learning_rate, EPOCHS=args.epochs, BATCH_SIZE=args.batch_size)
+    populate_config(config, 
+                    ITERATIONS=args.iterations, 
+                    EPISODES=args.episodes, 
+                    REPLAY_MEMORY_SIZE=args.replay_memory_size, 
+                    EVALUATION_MATCHES=args.evaluation_matches, 
+                    ACCEPTANCE_THRESHOLD=args.acceptance_threshold, 
+                    TEMPERATURE=args.temperature, 
+                    MONTE_CARLO_ROLLOUTS=args.monte_carlo_rollouts, 
+                    CUDA=args.cuda, 
+                    RESIDUAL_BLOCKS=args.residual_blocks, 
+                    LEARNING_RATE=args.learning_rate, 
+                    EPOCHS=args.epochs, 
+                    BATCH_SIZE=args.batch_size)
 
     # Initialize the game rules and neural network
     if args.game == "Connect4":
