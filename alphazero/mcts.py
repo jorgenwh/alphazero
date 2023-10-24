@@ -1,34 +1,33 @@
 import numpy as np
 from collections import defaultdict
-from typing import Union
 
 from .rules import Rules
 from .network import Network
-from .args import MONTE_CARLO_LEAF_ROLLOUTS, CPUCT
+from .config import Config
+
+CPUCT = 1.0
 
 class MCTS:
-    def __init__(self, rules: Rules, network: Network):
+    def __init__(self, rules: Rules, network: Network, config: Config):
         self.rules = rules
         self.network = network
+        self.config = config
 
         self.N = defaultdict(float) # Number of times a state-action pair has been visited
         self.W = defaultdict(float) # Total value of a state-action pair
         self.Q = defaultdict(float) # Average value of a state-action pair
         self.P = defaultdict(float) # Prior probability of taking an action in a state
 
-    def get_policy(self, 
-            state: Union[np.ndarray, tuple[np.ndarray, ...]], 
-            temperature: int
-    ) -> np.ndarray:
-        for _ in range(MONTE_CARLO_LEAF_ROLLOUTS):
+    def get_policy(self, state: np.ndarray) -> np.ndarray:
+        for _ in range(self.config.MONTE_CARLO_ROLLOUTS):
             self.leaf_rollout(state)
 
         state_hash = self.rules.hash(state)
         raw_pi = [self.N[(state_hash, action)] for action in range(self.rules.get_action_space())]
 
         # if temperature = 0, we choose the action deterministically for competitive play
-        if temperature > 0:
-            pi = [N ** (1.0 / temperature) for N in raw_pi]
+        if self.config.TEMPERATURE > 0:
+            pi = [N ** (1.0 / self.config.TEMPERATURE) for N in raw_pi]
             if sum(pi) == 0:
                 pi = [1.0 for _ in range(len(pi))]
             pi = [N / sum(pi) for N in pi]
@@ -42,7 +41,7 @@ class MCTS:
 
         return pi
 
-    def leaf_rollout(self, state: Union[np.ndarray, tuple[np.ndarray, ...]]) -> float:
+    def leaf_rollout(self, state: np.ndarray) -> float:
         # if the search has reached a terminal state, it returns the value according to
         # the game's rules
         winner = self.rules.get_winner(state)

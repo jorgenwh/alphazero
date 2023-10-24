@@ -3,7 +3,7 @@ import torch
 import datetime
 
 from .network import Network
-from .args import RESIDUAL_BLOCKS
+from .config import Config
 
 def save_checkpoint(dir_name: str, network: Network, games_played: int) -> None:
     filename = f"{dir_name}/model_checkpoint_{games_played}games.pt"
@@ -16,8 +16,11 @@ def load_checkpoint(dir_name: str, network: Network, games_played: int) -> None:
     assert os.path.isfile(filename)
     network.model.load_state_dict(torch.load(filename))
 
+def load_model(path: str, network: Network) -> None:
+    assert os.path.isfile(path)
+    network.model.load_state_dict(torch.load(path))
 
-def setup_training_session() -> str:
+def setup_training_session(config: Config, game: str) -> str:
     if not os.path.isdir("output"):
         os.mkdir("output")
 
@@ -28,7 +31,8 @@ def setup_training_session() -> str:
     os.mkdir(dir_name)
 
     f = open(dir_name + "config", "w")
-    f.write("RESIDUAL_BLOCKS=" + str(RESIDUAL_BLOCKS))
+    f.write("GAME=" + game + "\n")
+    f.write("RESIDUAL_BLOCKS=" + str(config.RESIDUAL_BLOCKS) + "\n")
     f.close()
 
     return dir_name
@@ -49,7 +53,7 @@ class PrintColors():
     endc = "\33[0m"
 
 
-class AverageMeter(object):
+class AverageMeter():
     def __init__(self):
         self.val = 0
         self.avg = 0

@@ -6,10 +6,10 @@ from .rules import OthelloRules
 from .network import OthelloNetwork
 from ...mcts import MCTS
 from ...misc import PrintColors as PC
-from ...args import PLAY_TEMPERATURE
+from ...config import Config
 
 class OthelloGUI(QtWidgets.QMainWindow):
-    def __init__(self, rules: OthelloRules, network: OthelloNetwork):
+    def __init__(self, rules: OthelloRules, network: OthelloNetwork, config: Config):
         super().__init__()
         self.setAutoFillBackground(True)
         p = self.palette()
@@ -18,7 +18,8 @@ class OthelloGUI(QtWidgets.QMainWindow):
 
         self.rules = rules
         self.network = network
-        self.mcts = MCTS(self.rules, self.network)
+        self.config = config
+        self.mcts = MCTS(self.rules, self.network, self.config)
 
         self.network_turn = -1
         self.move = 1
@@ -44,7 +45,7 @@ class OthelloGUI(QtWidgets.QMainWindow):
     def step(self) -> None:
         if self.cur_player == self.network_turn and self.winner is None:
             observation = self.state if self.cur_player == 1 else self.rules.flip_view(self.state)
-            pi = self.mcts.get_policy(observation, temperature=PLAY_TEMPERATURE)
+            pi = self.mcts.get_policy(observation)
             action = np.argmax(pi)
 
             perceived_value = self.mcts.Q[(self.rules.hash(observation), action)]
@@ -71,6 +72,7 @@ class OthelloGUI(QtWidgets.QMainWindow):
             self.winner = None
             self.cur_player = 1
             self.network_turn *= -1
+            self.mcts = MCTS(self.rules, self.network, self.config)
             self.move = 1
             self.othello_widget.draw()
         else:

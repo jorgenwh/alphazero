@@ -5,14 +5,15 @@ from .rules import TicTacToeRules
 from .network import TicTacToeNetwork
 from ...mcts import MCTS
 from ...misc import PrintColors as PC
-from ...args import PLAY_TEMPERATURE
+from ...config import Config
 
 class TicTacToeGUI(QtWidgets.QMainWindow):
-    def __init__(self, rules: TicTacToeRules, network: TicTacToeNetwork):
+    def __init__(self, rules: TicTacToeRules, network: TicTacToeNetwork, config: Config):
         super().__init__()
         self.rules = rules
         self.network = network
-        self.mcts = MCTS(self.rules, self.network)
+        self.config = config
+        self.mcts = MCTS(self.rules, self.network, self.config)
 
         self.network_turn = -1
         self.move = 1
@@ -38,7 +39,7 @@ class TicTacToeGUI(QtWidgets.QMainWindow):
     def step(self) -> None:
         if self.cur_player == self.network_turn and self.winner is None:
             observation = self.state if self.cur_player == 1 else self.rules.flip_view(self.state)
-            pi = self.mcts.get_policy(observation, temperature=PLAY_TEMPERATURE)
+            pi = self.mcts.get_policy(observation)
             action = np.argmax(pi)
 
             perceived_value = self.mcts.Q[(self.rules.hash(observation), action)]
@@ -58,7 +59,7 @@ class TicTacToeGUI(QtWidgets.QMainWindow):
             self.winner = None
             self.cur_player = 1
             self.network_turn *= -1
-            self.mcts = MCTS(self.rules, self.network)
+            self.mcts = MCTS(self.rules, self.network, self.config)
             self.move = 1
             self.tictactoe_widget.draw()
         else:
@@ -120,6 +121,7 @@ class TicTacToeGUI(QtWidgets.QMainWindow):
         print(f"{PC.transparent}| ----------------------------------- |{PC.endc}\n")
 
         self.move += 1
+
 
 class TicTacToeWidget(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget, app: TicTacToeGUI):

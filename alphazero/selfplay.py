@@ -6,17 +6,16 @@ from .rules import Rules
 from .replay_memory import ReplayMemory
 from .network import Network
 from .mcts import MCTS
-from .args import EPISODES, SELFPLAY_TEMPERATURE
+from .config import Config
 
-def selfplay(rules: Rules, network: Network, replay_memory: ReplayMemory) -> None:
+def selfplay(rules: Rules, network: Network, replay_memory: ReplayMemory, config: Config) -> int:
     for i in tqdm(
-            range(EPISODES), 
+            range(config.EPISODES), 
             desc="self-play", 
             bar_format="{l_bar}{bar}| game: {n_fmt}/{total_fmt} - elapsed: {elapsed}"
     ):
-        mcts = MCTS(rules, network)
+        mcts = MCTS(rules, network, config)
         play_episode(rules, mcts, replay_memory)
-    return EPISODES
 
 def play_episode(rules: Rules, mcts: MCTS, replay_memory: ReplayMemory) -> None:
     state = rules.get_start_state() 
@@ -26,7 +25,7 @@ def play_episode(rules: Rules, mcts: MCTS, replay_memory: ReplayMemory) -> None:
 
     while winner is None:
         observartion = state if cur_player == 1 else rules.flip_view(state)
-        pi = mcts.get_policy(observartion, SELFPLAY_TEMPERATURE)
+        pi = mcts.get_policy(observartion)
         sequence.append((observartion, pi, cur_player))
         action = np.random.choice(rules.get_action_space(), p=pi)
         state = rules.step(state, action, cur_player)

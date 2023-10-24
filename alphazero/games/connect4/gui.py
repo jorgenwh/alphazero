@@ -5,14 +5,15 @@ from .rules import Connect4Rules
 from .network import Connect4Network
 from ...mcts import MCTS
 from ...misc import PrintColors as PC
-from ...args import PLAY_TEMPERATURE
+from ...config import Config
 
 class Connect4GUI(QtWidgets.QMainWindow):
-    def __init__(self, rules: Connect4Rules, network: Connect4Network):
+    def __init__(self, rules: Connect4Rules, network: Connect4Network, config: Config):
         super().__init__()
         self.rules = rules
         self.network = network
-        self.mcts = MCTS(self.rules, self.network)
+        self.config = config
+        self.mcts = MCTS(self.rules, self.network, self.config)
 
         self.network_turn = -1
         self.move = 1
@@ -38,7 +39,7 @@ class Connect4GUI(QtWidgets.QMainWindow):
     def step(self) -> None:
         if self.cur_player == self.network_turn and self.winner is None:
             observation = self.state if self.cur_player == 1 else self.rules.flip_view(self.state)
-            pi = self.mcts.get_policy(observation, temperature=PLAY_TEMPERATURE)
+            pi = self.mcts.get_policy(observation)
             action = np.argmax(pi)
 
             perceived_value = self.mcts.Q[(self.rules.hash(observation), action)]
@@ -58,7 +59,7 @@ class Connect4GUI(QtWidgets.QMainWindow):
             self.winner = None
             self.cur_player = 1
             self.network_turn *= -1
-            self.mcts = MCTS(self.rules, self.network)
+            self.mcts = MCTS(self.rules, self.network, self.config)
             self.move = 1
             self.connect4_widget.draw()
         else:

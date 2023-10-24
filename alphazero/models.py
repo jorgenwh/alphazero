@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .args import RESIDUAL_BLOCKS
-
 
 class MLP(nn.Module):
     def __init__(self, in_features: int, hidden_features: list[int, ...], action_space: int):
@@ -31,14 +29,16 @@ class MLP(nn.Module):
 
         return pi, v
 
+
 class ResNet(nn.Module):
     """general resnet implementation that will work for most board games"""
     def __init__(self, 
-            in_height: int, in_width: int, in_channels: int, action_space: int):
+            in_height: int, in_width: int, in_channels: int, residual_blocks: int, action_space: int):
         super().__init__()
         self.in_height = in_height
         self.in_width = in_width
         self.in_channels = in_channels
+        self.residual_blocks = residual_blocks
         self.action_space = action_space
 
         self.conv_block = nn.Sequential(
@@ -46,7 +46,7 @@ class ResNet(nn.Module):
             nn.BatchNorm2d(num_features=256),
             nn.ReLU()
         )
-        self.residual_tower = nn.Sequential(*[Block() for _ in range(RESIDUAL_BLOCKS)])
+        self.residual_tower = nn.Sequential(*[Block() for _ in range(self.residual_blocks)])
 
         # policy head
         self.pi_conv_bn = nn.Sequential(
