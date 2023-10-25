@@ -21,8 +21,8 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", type=str, required=True, help="Path to a model checkpoint to load and play against.")
     parser.add_argument("--temperature", type=float, default=1.0, help="Determines the greediness of the agent. A high temperature means more deterministic and greedy play. Value must be in the (0.0, 1.0) range.")
     parser.add_argument("--monte_carlo_rollouts", type=int, default=160, help="Number of monte-carlo search rollouts to perform per action. More rollouts results in stronger play but longer think-time.")
-    parser.add_argument("--cuda", type=bool, default=True, help="Whether or not to use CUDA.")
     parser.add_argument("--residual_blocks", required=True, type=int, help="Number of residual blocks in the neural network. This must match the number of residual blocks used during training.")
+    parser.add_argument("--nocuda", action="store_true", help="Disable CUDA.")
     args = parser.parse_args()
 
     # Populate the config
@@ -30,7 +30,7 @@ if __name__ == "__main__":
       config, 
       TEMPERATURE=args.temperature, 
       MONTE_CARLO_ROLLOUTS=args.monte_carlo_rollouts, 
-      CUDA=args.cuda, 
+      CUDA=(not args.nocuda), 
       RESIDUAL_BLOCKS=args.residual_blocks, 
       LEARNING_RATE=0.001)
 

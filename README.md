@@ -44,11 +44,11 @@ The following optional arguments can also be specified:
 * `--acceptance_threshold` (float): the required ratio of matches won against the previous checkpoint to accept a new model. (default=0.55)
 * `--temperature` (float): determines the greediness of the agent. A higher temperature means more greedy and deterministic play. The temperature must be in the range (0.0, 1.0). (default=1.0)
 * `--monte_carlo_rollouts` (int): the number of monte-carlo rollouts to perform per action. A higher number of rollouts means stronger performance but increases think-time. (default=120)
-* `--cuda` (bool): Whether or not to use CUDA. (default=True)
 * `--residual_blocks` (int): number of residual blocks in the neural network. (default=2)
 * `--learning_rate` (float): the learning rate for the neural network. (default=0.001)
 * `--epochs` (int): the number of training epochs for the neural network. (default=10)
 * `--batch_size` (int): the batch size used when training the neural network. (default=128)
+* `--nocuda` : when this flag is present, CUDA is disabled.
 
 ### Playing against a neural network
 
@@ -63,4 +63,4 @@ The following optional arguments can also be specified:
 
 * `--temperature` (float): determines the greediness of the agent. A higher temperature means more greedy and deterministic play. The temperature must be in the range (0.0, 1.0). (default=1.0)
 * `--monte_carlo_rollouts` (int): the number of monte-carlo rollouts to perform per action. A higher number of rollouts means stronger performance but increases think-time. (default=120)
-* `--cuda` (bool): Whether or not to use CUDA. (default=True)
+* `--nocuda` : when this flag is present, CUDA is disabled.
