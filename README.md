@@ -1,8 +1,15 @@
-# A simple AlphaZero implementation in Python
+# AlphaZero
 
 <p align="center">
   <img src="./assets/ai-game-player.png" width="300">
 </p>
+
+This is a straightforward implementation of DeepMind's self-play reinforcement learning algorithm, AlphaZero. 
+The code is written in Python, utilizing PyTorch for the deep neural networks and PyQt5 for the GUI applications, allowing users to play against the trained networks.
+
+Given that self-play reinforcement learning demands significant computational resources and this implementation is designed for single-computer, single-GPU setups, it's challenging to train robust networks for games with a very large number of possible states, like Chess and Go. 
+Nonetheless, this implementation supports simpler games. 
+Currently, there are rules, networks, and GUIs for four games: TicTacToe, Connect4, Othello, and a condensed version of Gomoku.
 
 ## Installation and setup
 To install the necessary dependencies:
