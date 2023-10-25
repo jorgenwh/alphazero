@@ -17,6 +17,11 @@ To install the necessary dependencies:
 pip install torch numpy tqdm pyqt5
 ```
 
+If PyTorch gives you any trouble with CUDA, you may attempt to install the dependencies directly from the requirements.txt file:
+```bash
+pip install -r requirements.txt
+```
+
 Optionally, if you wish to install alphazero (although this is not necessary to use it):
 ```bash
 pip install .
